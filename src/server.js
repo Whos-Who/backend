@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { Sequelize } from 'sequelize';
 
-import handleError from './errors/handleError';
+import handleError from "./errors/handleError";
 
 dotenv.config();
 
