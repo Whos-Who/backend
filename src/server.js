@@ -1,16 +1,30 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { Sequelize } from 'sequelize';
 
 import handleError from './errors/handleError';
 
 dotenv.config();
 
+const logging = process.env.NODE_ENV === 'development' ? false : console.log;
 const PORT = process.env.PORT || 5000;
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+let sequelize;
+
+if (process.env.NODE_ENV == 'production') {
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialectOptions: { ssl: { require: true, rejectUnauthorized: false } }
+  });
+} else {
+  sequelize = new Sequelize(DATABASE_URL, {
+    logging
+  });
+}
 
 app.get('/', (req, res) => {
   res.send('Hello World!!!!!');
