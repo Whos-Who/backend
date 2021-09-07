@@ -1,7 +1,7 @@
 const path = require('path');
-const dotenvFlow = require('dotenv-flow');
+const dotenv = require('dotenv');
 
-dotenvFlow.config();
+dotenv.config();
 
 module.exports = {
   'models-path': path.resolve('src', 'models'),
