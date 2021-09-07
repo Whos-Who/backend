@@ -17,6 +17,7 @@ app.use(express.json());
 let sequelize;
 
 if (process.env.NODE_ENV == 'production') {
+  console.log(process.env.DATABASE_URL);
   sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialectOptions: { ssl: { require: true, rejectUnauthorized: false } }
   });
