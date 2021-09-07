@@ -1,0 +1,15 @@
+version: "3.8"
+
+volumes:
+  db: {}
+
+services:
+  postgres:
+    image: "postgres:13-alpine"
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=assignment-3
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5432:5432"
