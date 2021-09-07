@@ -10,6 +10,7 @@ module.exports = {
     dialect: 'postgres'
   },
   production: {
-    use_env_variable: process.env.DATANASE_URL
+    use_env_variable: process.env.DATANASE_URL,
+    dialect: 'postgres'
   }
 };
