@@ -21,7 +21,7 @@ if (process.env.NODE_ENV == 'production') {
     dialectOptions: { ssl: { require: true, rejectUnauthorized: false } }
   });
 } else {
-  sequelize = new Sequelize(DATABASE_URL, {
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
     logging
   });
 }
