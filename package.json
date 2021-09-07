@@ -4,6 +4,7 @@
   "description": "Backend repository for the assignment 3",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint 'src/**/*.js*'",
     "start": "babel-node ./src/server.js",
     "dev": "nodemon --exec babel-node ./src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -21,9 +22,7 @@
   },
   "homepage": "https://github.com/CS3216-A3-Group-7/backend#readme",
   "devDependencies": {
-    "@babel/core": "^7.15.5",
-    "@babel/node": "^7.15.4",
-    "@babel/preset-env": "^7.15.4",
+    "eslint": "^7.32.0",
     "sequelize-cli": "^6.2.0"
   },
   "dependencies": {
