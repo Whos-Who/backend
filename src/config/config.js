@@ -1,8 +1,6 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-console.log('CONFIG', process.env.DATABASE_URL);
-
 module.exports = {
   development: {
     username: 'postgres',
@@ -12,7 +10,7 @@ module.exports = {
     dialect: 'postgres'
   },
   production: {
-    use_env_variable: process.env.DATABASE_URL,
+    url: process.env.DATABASE_URL,
     dialect: 'postgres'
   }
 };
