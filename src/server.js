@@ -16,6 +16,9 @@ app.use(express.json());
 
 let sequelize;
 
+// NODE_ENV here determines where the migrations are written to, production is live server
+// Else it will be written to your local DB
+
 if (process.env.NODE_ENV == 'production') {
   console.log('SERVER', process.env.DATABASE_URL);
   sequelize = new Sequelize(process.env.DATABASE_URL, {
