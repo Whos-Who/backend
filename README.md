@@ -30,4 +30,4 @@ Backend repository for the assignment 3
 ### Deployment
 
 1. Configured auto deployment when there are changes to main branch
-2. Check environment `assignment-3-web-backend ` to check deployment status
+2. Check environment `assignment-3-web-backend` to check deployment status
