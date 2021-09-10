@@ -1,9 +1,11 @@
-import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+
+import { Sequelize } from 'sequelize';
+import { DATABASE_URL } from '../const/const';
+
 dotenv.config();
 
 const logging = process.env.NODE_ENV === 'development' ? false : console.log;
-const DATABASE_URL = process.env.DATABASE_URL;
 
 let sequelize;
 
