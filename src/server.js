@@ -1,34 +1,23 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { Sequelize } from 'sequelize';
 
+import { createServer } from 'http';
 import handleError from './errors/handleError';
+
+import { initializeWebSockets } from './sockets/socket';
+import { redisClient } from './database/redis';
 
 dotenv.config();
 
-const logging = process.env.NODE_ENV === 'development' ? false : console.log;
 const PORT = process.env.PORT || 5000;
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-let sequelize;
-
-// NODE_ENV here determines where the migrations are written to, production is live server
-// Else it will be written to your local DB
-
-if (process.env.NODE_ENV == 'production') {
-  console.log('SERVER', process.env.DATABASE_URL);
-  sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialectOptions: { ssl: { require: true, rejectUnauthorized: false } }
-  });
-} else {
-  sequelize = new Sequelize(process.env.DATABASE_URL, {
-    logging
-  });
-}
+const httpServer = createServer(app);
+initializeWebSockets(httpServer);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
@@ -41,9 +30,7 @@ app.all('*', (req, res) => {
     .json('The resource you are looking for does not exist!');
 });
 
-app.listen(PORT, () => {
-  console.log(`Application running at ${PORT}`);
-});
+httpServer.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
 
 // General catch for other erros
 app.use((err, req, res, next) => {
