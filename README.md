@@ -30,8 +30,8 @@ Backend repository for the assignment 3
 
 1. Install Prettier extension on VSCode
 2. Set it as your code formatter and set it to format document on save (which will make things easier)
-3. Code should be formatted on save
-4. ESlint is installed to do some maintain some code style (used the lowest requirement), which adheres to the Prettier style formatter
+3. Code should be auto-formatted on save
+4. ESlint is installed to maintain some code style (used the lowest requirement), which adheres to the Prettier style formatter
 5. CI check enforced just for linting
 
 ### Deployment
