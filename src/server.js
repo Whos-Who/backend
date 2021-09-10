@@ -6,7 +6,7 @@ import { createServer } from 'http';
 import handleError from './errors/handleError';
 
 import { initializeWebSockets } from './sockets/socket';
-
+import User from './models/user';
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
