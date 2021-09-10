@@ -7,5 +7,3 @@ const DEFAULT_EXPIRATION = 3600;
 // Redis Client intialization
 // Blank Redis URL will take localhost and port 6379 as default
 export const redisClient = Redis.createClient(REDIS_URL);
-console.log(REDIS_URL);
-

@@ -1,4 +1,7 @@
-import { DATABASE_URL } from '../src/const/const';
+const dotenv = require('dotenv');
+dotenv.config();
+
+const DATABASE_URL = process.env.DATABASE_URL;
 
 module.exports = {
   development: {
