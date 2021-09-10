@@ -6,7 +6,6 @@ import { createServer } from 'http';
 import handleError from './errors/handleError';
 
 import { initializeWebSockets } from './sockets/socket';
-import { redisClient } from './database/redis';
 
 dotenv.config();
 
