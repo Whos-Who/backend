@@ -18,6 +18,13 @@ Backend repository for the assignment 3
 1. Change rename `.env.example` to `.env`, which will be used to set the environment variables
 2. Run `docker-compose up` to build docker image and run docker container for PostgreSQL Database
 3. Hit Ctrl-c to exit
+4. To remove your container, run `docker compose down`
+
+### Running Redis locally
+1. To check if Redis is running locally, check your docker container is running
+2. Install `redis-cli`
+3. After successfully installing, run `redis-cli`, enter `PING`
+4. If your Redis Server replies with `PONG`, your Redis Server is running correctly
 
 ### Linting, Formatting and CI Check
 
