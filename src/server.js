@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
+import { PORT } from './const/const';
 import { createServer } from 'http';
 import handleError from './errors/handleError';
 
@@ -9,10 +9,6 @@ import { initializeWebSockets } from './sockets/socket';
 
 import users from './routes/users';
 import decks from './routes/decks';
-
-dotenv.config();
-
-const PORT = process.env.PORT || 5000;
 
 const app = express();
 app.use(cors());

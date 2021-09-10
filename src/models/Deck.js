@@ -1,25 +1,26 @@
-'use strict';
-const { Model } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class Deck extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      Deck.belongsTo(models.User);
+import Sequelize from 'sequelize';
+import sequelize from '../database/sequelize';
+import User from './User';
+
+const Deck = sequelize.define('Decks', {
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  title: {
+    type: Sequelize.STRING
+  },
+  isPublic: {
+    type: Sequelize.BOOLEAN
+  },
+  userId: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: 'Users',
+      key: 'id'
     }
   }
-  Deck.init(
-    {
-      title: DataTypes.STRING,
-      isPublic: DataTypes.BOOLEAN
-    },
-    {
-      sequelize,
-      modelName: 'Deck'
-    }
-  );
-  return Deck;
-};
+});
+
+export default Deck;

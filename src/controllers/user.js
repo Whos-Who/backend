@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import createError from 'http-errors';
 
-var User = require('../models').User;
+import User from '../models/User';
 
 async function retrieveUser(req, res, next) {
   try {
@@ -12,6 +12,7 @@ async function retrieveUser(req, res, next) {
     req.user = user;
     next();
   } catch (err) {
+    console.log(err);
     next(err);
   }
 }

@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
-import createError from 'http-errors';
 
-var Deck = require('../models').Deck;
+import createError from 'http-errors';
+import Deck from '../models/Deck';
 
 async function retrieveDeck(req, res, next) {
   try {

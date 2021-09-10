@@ -1,9 +1,13 @@
+import dotenv from 'dotenv';
+
 import { Sequelize } from 'sequelize';
+import { DATABASE_URL } from '../const/const';
+
+dotenv.config();
 
 const logging = process.env.NODE_ENV === 'development' ? false : console.log;
-const DATABASE_URL = process.env.DATABASE_URL;
 
-export let sequelize;
+let sequelize;
 
 // NODE_ENV here determines where the migrations are written to, production is live server
 // Else it will be written to your local DB
@@ -18,3 +22,5 @@ if (process.env.NODE_ENV == 'production') {
     logging
   });
 }
+
+export default sequelize;
