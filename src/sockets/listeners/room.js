@@ -1,6 +1,7 @@
 import { createRoom, joinRoom, leaveRoom, removeRoom } from '../handlers/room';
 
 const intializeGameroomListeners = (socket, io) => {
+  // Retrieves from socket query parameters
   let { clientId, socketId } = socket;
   // clientId = 'Uncle Soo';
   // socketId = 'asirjhwoeirejh';
@@ -17,6 +18,7 @@ const intializeGameroomListeners = (socket, io) => {
       socket.emit('room-join', gameState);
       socket.join(gameState);
     } catch (err) {
+      socket.emit('error-room-create', err);
       console.log('create room error occured', err);
       throw err;
     }
@@ -33,6 +35,7 @@ const intializeGameroomListeners = (socket, io) => {
       socket.emit('room-join', gameState);
       socket.join(gameState);
     } catch (err) {
+      socket.emit('error-room-join', err);
       console.log('join room error occured', err);
       throw err;
     }
@@ -68,6 +71,7 @@ const intializeGameroomListeners = (socket, io) => {
         console.log(newHost, 'has become host!');
       }
     } catch (err) {
+      socket.emit('error-room-leave', err);
       console.log('leave room occured', err);
       throw err;
     }
