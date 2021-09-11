@@ -6,7 +6,7 @@ const intializeGameroomListeners = (socket, io) => {
   // socketId = 'asirjhwoeirejh';
 
   // Create room when user clicks create room and makes user host
-  socket.on('roomCreate', async (data) => {
+  socket.on('room-create', async (data) => {
     try {
       const { username } = data;
 
@@ -14,7 +14,7 @@ const intializeGameroomListeners = (socket, io) => {
       const gameState = createRoom(roomCode, clientId, username);
 
       // Tell client room is created and he can join room
-      socket.emit('roomJoin', gameState);
+      socket.emit('room-join', gameState);
       socket.join(gameState);
     } catch (err) {
       console.log('create room error occured', err);
@@ -23,14 +23,14 @@ const intializeGameroomListeners = (socket, io) => {
   });
 
   // Join room when user clicks join room
-  socket.on('roomJoin', async (data) => {
+  socket.on('room-join', async (data) => {
     try {
       const { roomCode, username } = data;
 
       const gameState = joinRoom(roomCode, clientId, username);
 
       // Tell client room has been found and he can join room
-      socket.emit('roomJoin', gameState);
+      socket.emit('room-join', gameState);
       socket.join(gameState);
     } catch (err) {
       console.log('join room error occured', err);
@@ -39,14 +39,14 @@ const intializeGameroomListeners = (socket, io) => {
   });
 
   // Leave room when user clicks leave room
-  socket.on('roomLeave', async (data) => {
+  socket.on('room-leave', async (data) => {
     try {
       const { roomCode } = data;
 
       const [gameState, newHost] = await leaveRoom(roomCode, clientId);
 
       // Tell client he can leave the room
-      socket.emit('roomLeave');
+      socket.emit('room-leave');
       socket.leave(roomCode);
 
       if (gameState.playerCount == 0) {
@@ -57,14 +57,14 @@ const intializeGameroomListeners = (socket, io) => {
       }
 
       // Broadcast to all users in room that user has left
-      io.in(roomCode).emit('userLeftRoom', {
+      io.in(roomCode).emit('user-leave', {
         clientId: clientId,
         gameState: gameState
       });
 
       if (newHost) {
         // Broadcast to all users in room that new host appointed
-        io.in(roomCode).emit('newHost', newHost);
+        io.in(roomCode).emit('new-host', newHost);
         console.log(newHost, 'has become host!');
       }
     } catch (err) {
