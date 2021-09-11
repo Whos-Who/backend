@@ -9,6 +9,7 @@ import { initializeWebSockets } from './sockets/socket';
 
 import users from './routes/users';
 import decks from './routes/decks';
+import questions from './routes/questions';
 
 const app = express();
 app.use(cors());
@@ -23,6 +24,7 @@ app.get('/', (req, res) => {
 
 app.use('/users', users);
 app.use('/decks', decks);
+app.use('/questions', questions);
 
 // Handle resource not found
 app.all('*', (req, res) => {

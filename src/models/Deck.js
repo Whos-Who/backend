@@ -1,6 +1,6 @@
 import Sequelize from 'sequelize';
 import sequelize from '../database/sequelize';
-import User from './User';
+import Question from './Question';
 
 const Deck = sequelize.define('Decks', {
   id: {
@@ -22,5 +22,8 @@ const Deck = sequelize.define('Decks', {
     }
   }
 });
+
+Deck.hasMany(Question, { foreignKey: 'deckId' });
+Question.belongsTo(Deck, { foreignKey: 'deckId' });
 
 export default Deck;

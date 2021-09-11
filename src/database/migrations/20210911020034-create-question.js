@@ -2,22 +2,19 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Decks', {
+    await queryInterface.createTable('Questions', {
       id: {
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      title: {
+      question: {
         type: Sequelize.STRING
       },
-      isPublic: {
-        type: Sequelize.BOOLEAN
-      },
-      userId: {
+      deckId: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'Users',
+          model: 'Decks',
           key: 'id'
         },
         onDelete: 'cascade'
@@ -33,6 +30,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('Decks');
+    await queryInterface.dropTable('Questions');
   }
 };
