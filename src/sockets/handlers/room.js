@@ -14,12 +14,6 @@ const intializeGameState = (roomCode, clientId, username) => {
     playerCount: 1,
     players: {
       [clientId]: intializePlayerState(username)
-    },
-    scores: {
-      [clientId]: 0
-    },
-    currAnswers: {
-      [clientId]: ''
     }
   };
 };
@@ -28,7 +22,9 @@ const intializeGameState = (roomCode, clientId, username) => {
 const intializePlayerState = (username) => {
   return {
     username,
-    connected: true
+    connected: true,
+    score: 0,
+    currAnswer: ''
   };
 };
 
@@ -36,22 +32,16 @@ const intializePlayerState = (username) => {
 const formatGameState = (gameState) => {
   return {
     ...gameState,
-    scores: JSON.stringify(gameState.scores),
-    players: JSON.stringify(gameState.players),
-    currAnswers: JSON.stringify(gameState.currAnswers)
+    players: JSON.stringify(gameState.players)
   };
 };
 
 const parseGameState = (gameState) => {
-  const scores = JSON.parse(gameState.scores);
   const players = JSON.parse(gameState.players);
-  const currAnswers = JSON.parse(gameState.currAnswers);
 
   return {
     ...gameState,
-    scores: scores,
-    players: players,
-    currAnswers: currAnswers
+    players: players
   };
 };
 
@@ -97,14 +87,6 @@ const addUserToRoom = (clientId, username, gameState) => {
     players: {
       ...gameState['players'],
       [clientId]: intializePlayerState(username)
-    },
-    scores: {
-      ...gameState['scores'],
-      [clientId]: 0
-    },
-    currAnswers: {
-      ...gameState['currAnswers'],
-      [clientId]: ''
     }
   };
 
@@ -114,8 +96,6 @@ const addUserToRoom = (clientId, username, gameState) => {
 
 const removeUserFromRoom = (clientId, gameState) => {
   delete gameState['players'][clientId];
-  delete gameState['scores'][clientId];
-  delete gameState['currAnswers'][clientId];
 
   const updatedGameState = {
     ...gameState,

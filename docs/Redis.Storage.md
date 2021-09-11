@@ -13,8 +13,20 @@ room-<roomId>:
   currAnswerer: string
   playerCount: int
   players: map<clientId,playerInfo>
-  scores: map<clientId,score>
   currAnswers: map<clientId,answer>
+
+players field is a map of clientId to listed attributes
+
+clientId - {
+  username: string
+  connected: boolean
+  score: number
+  currAnswer: string
+}
+
+currAnswers field is a map of clientId to answers - {
+  answer: string
+}
 
 
 Tracing questions and guessing order for a particular game
