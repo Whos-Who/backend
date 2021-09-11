@@ -2,9 +2,8 @@ import { createRoom, joinRoom, leaveRoom, removeRoom } from '../handlers/room';
 
 const intializeGameroomListeners = (socket, io) => {
   // Retrieves from socket query parameters
-  let { clientId, socketId } = socket;
-  // clientId = 'Uncle Soo';
-  // socketId = 'asirjhwoeirejh';
+  const { clientId } = socket.handshake.query;
+  const socketId = socket.id;
 
   // Create room when user clicks create room and makes user host
   socket.on('room-create', async (data) => {
