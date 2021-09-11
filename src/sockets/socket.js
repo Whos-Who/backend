@@ -13,6 +13,8 @@ export const initializeWebSockets = (server) => {
     console.log(socket.id, 'JOINED');
     socket.emit('Welcome!', socket.id);
 
+    intializeGameroomListeners(socket, io);
+
     socket.on('disconnecting', (reason) => {
       console.log(socket.id, 'LEAVING');
     });
