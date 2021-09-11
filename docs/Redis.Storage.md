@@ -3,7 +3,7 @@
 Currently, redis storage structure is planned to be as such
 
 ```
-Tracking qame State for a room
+Tracking Game State for a room
 
 room-<roomId>:
   roomCode: string
@@ -11,11 +11,10 @@ room-<roomId>:
   host: string
   currQuestion: string
   currAnswerer: string
-  playerCount: int
-  players: map<clientId,playerInfo>
-  currAnswers: map<clientId,answer>
+  playerCount: number
+  players: map<clientId,PlayerState>
 
-players field is a map of clientId to listed attributes
+PlayerState is a map of clientId to listed attributes
 
 clientId - {
   username: string
@@ -24,12 +23,8 @@ clientId - {
   currAnswer: string
 }
 
-currAnswers field is a map of clientId to answers - {
-  answer: string
-}
 
-
-Tracing questions and guessing order for a particular game
+Tracking questions and guessing order for a particular game
 
 questions-<roomId>: List / Deque of questions
 guessing-order-<roomId>: List / Deque of clientIds
@@ -40,6 +35,5 @@ Might need a user to connection status mapping, called a presence server for the
 player-<clientId>:
     socketId: string
     roomId: string
-
 
 ```
