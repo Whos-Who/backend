@@ -1,5 +1,6 @@
 import Sequelize from 'sequelize';
 import sequelize from '../database/sequelize';
+import Deck from './Deck';
 
 const User = sequelize.define('Users', {
   id: {
@@ -8,14 +9,17 @@ const User = sequelize.define('Users', {
     autoIncrement: true
   },
   username: {
-    type: Sequelize.STRING,
+    type: Sequelize.STRING
   },
   email: {
-    type: Sequelize.STRING,
+    type: Sequelize.STRING
   },
   password: {
-    type: Sequelize.STRING,
+    type: Sequelize.STRING
   }
 });
+
+User.hasMany(Deck, { foreignKey: 'userId' });
+Deck.belongsTo(User, { foreignKey: 'userId' });
 
 export default User;
