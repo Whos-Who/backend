@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import { intializeGameroomListeners } from './listeners/gameroom';
 
 export const initializeWebSockets = (server) => {
   const io = new Server(server, {
@@ -11,7 +12,7 @@ export const initializeWebSockets = (server) => {
   // For FE to understand how it works
   io.on('connection', (socket) => {
     console.log(socket.id, 'JOINED');
-    socket.emit('Welcome!', socket.id);
+    io.send(socket.id).emit('WELCOME', {});
 
     intializeGameroomListeners(socket, io);
 
