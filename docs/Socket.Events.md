@@ -96,15 +96,14 @@ Server will emit a `error-room-leave` to the client, together with the error mes
 ## Misc
 
 <!--
-Template
+Template, paste here for now
 
+### Title
+'''
+'''
 ### Description
-
 ### Required Payload
-
 ### Response
-
 **Success**
-
 **Failure**
 -->
