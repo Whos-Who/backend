@@ -10,10 +10,8 @@ const intializeRoomListeners = (socket, io) => {
     try {
       const { username } = data;
 
-      // const roomCode = socket.id;
-      const roomCode = 123; //For testing
-
-      const gameState = createRoom(roomCode, clientId, username);
+      const roomCode = socket.id;
+      const gameState = await createRoom(roomCode, clientId, username);
 
       // Tell client room is created and he can join room
       socket.emit('room-join', gameState);
@@ -30,7 +28,7 @@ const intializeRoomListeners = (socket, io) => {
     try {
       const { roomCode, username } = data;
 
-      const gameState = joinRoom(roomCode, clientId, username);
+      const gameState = await joinRoom(roomCode, clientId, username);
 
       // Tell client room has been found and he can join room
       socket.emit('room-join', gameState);
