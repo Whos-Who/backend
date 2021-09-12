@@ -69,7 +69,7 @@ const getGameState = (roomCode) => {
 const updateGameStateInServer = async (gamestate) => {
   const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
 
-  Promise.all(
+  await Promise.all(
     Object.entries(gamestate).map((entry) => {
       const field = entry[0];
       const val = entry[1];
