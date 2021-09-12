@@ -1,4 +1,4 @@
-export const handleError = (err) => {
+const handleError = (err) => {
   const { name, statusCode, message } = err;
 
   return {
@@ -7,3 +7,5 @@ export const handleError = (err) => {
     message
   };
 };
+
+export default handleError;

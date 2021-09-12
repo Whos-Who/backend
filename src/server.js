@@ -7,6 +7,10 @@ import handleError from './errors/handleError';
 
 import { initializeWebSockets } from './sockets/socket';
 
+import users from './routes/users';
+import decks from './routes/decks';
+import questions from './routes/questions';
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -17,6 +21,10 @@ initializeWebSockets(httpServer);
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
+
+app.use('/users', users);
+app.use('/decks', decks);
+app.use('/questions', questions);
 
 // Handle resource not found
 app.all('*', (req, res) => {
