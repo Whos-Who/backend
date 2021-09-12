@@ -20,7 +20,10 @@ clientId - {
   username: string
   connected: boolean
   score: number
-  currAnswer: string
+  currAnswer: {
+    value: string,
+    isGuessed: boolean
+  }
 }
 
 

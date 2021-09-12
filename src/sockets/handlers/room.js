@@ -24,7 +24,10 @@ const intializePlayerState = (username) => {
     username,
     connected: true,
     score: 0,
-    currAnswer: ''
+    currAnswer: {
+      value: '',
+      isGuessed: false
+    }
   };
 };
 
@@ -47,7 +50,7 @@ const parseGameState = (gameState) => {
 
 const getGameState = (roomCode) => {
   const key = `${ROOM_PREFIX}-${roomCode}`;
-  console.log(key);
+
   const gameState = new Promise((resolve, reject) => {
     redisClient.HGETALL(key, (err, res) => {
       if (err) return reject(err);
@@ -114,11 +117,9 @@ const pickNewHost = (gameState) => {
 };
 
 const createRoom = async (roomCode, clientId, username) => {
-  console.log(clientId);
   const gameState = intializeGameState(roomCode, clientId, username);
 
   const formattedGameState = formatGameState(gameState);
-  console.log(formattedGameState);
   await updateGameStateInServer(formattedGameState);
 
   console.log('room created by', clientId, gameState);
@@ -163,8 +164,7 @@ const leaveRoom = async (roomCode, clientId) => {
   if (!gameState) throw new Error('Game does not exist!');
   const parsedGameState = parseGameState(gameState);
   const updatedGameState = removeUserFromRoom(clientId, parsedGameState);
-  // Uncomment to test
-  // const updatedGameState = removeUserFromRoom('Uncle Soo', parsedGameState);
+
   let newHost;
 
   // If host is same as person who left, select new one
@@ -173,8 +173,8 @@ const leaveRoom = async (roomCode, clientId) => {
     updatedGameState.playerCount > 0
   ) {
     const newHost = pickNewHost(updatedGameState);
-    console.log('NEW', newHost);
     updatedGameState['host'] = newHost;
+    console.log('NEW', newHost);
   }
 
   const formattedGameState = formatGameState(updatedGameState);
