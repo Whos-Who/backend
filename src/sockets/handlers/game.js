@@ -1,7 +1,7 @@
 import { QUESTIONS_PREFIX, GUESSING_ORDER } from '../../const/redis';
 import { redisClient } from '../../database/redis';
 
-const addQuestionsToServer = async (roomCode, questions) => {
+const addQuestions = async (roomCode, questions) => {
   const key = `${QUESTIONS_PREFIX}-${roomCode}`;
 
   // First elementin array is treated as the list key in Redis
@@ -11,7 +11,7 @@ const addQuestionsToServer = async (roomCode, questions) => {
   await redisClient.rpush(questions);
 };
 
-const addGuessingOrderToSever = async (roomCode, players) => {
+const addGuessingOrder = async (roomCode, players) => {
   const key = `${GUESSING_ORDER}-${roomCode}`;
 
   // First element in array is treated as the list key in Redis
@@ -47,9 +47,23 @@ const getNextGuesser = async (roomCode) => {
   return nextGuesser;
 };
 
+const removeQuestions = async (roomCode) => {
+  const key = `${QUESTIONS_PREFIX}-${roomCode}`;
+
+  await redisClient.DEL(key);
+};
+
+const removeGuessingOrder = async (roomCode) => {
+  const key = `${GUESSING_ORDER}-${roomCode}`;
+
+  await redisClient.DEL(key);
+};
+
 export {
-  addQuestionsToServer,
-  addGuessingOrderToSever,
+  addQuestions,
+  addGuessingOrder,
   getNextGuesser,
-  getNextQuestion
+  getNextQuestion,
+  removeQuestions,
+  removeGuessingOrder
 };

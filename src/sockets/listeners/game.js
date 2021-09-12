@@ -1,14 +1,17 @@
 import {
   getGameState,
   parseGameState,
-  updateGameStateInServer,
-  formatGameState
+  formatGameState,
+  cleanUpGameState,
+  updateGameStateInServer
 } from '../handlers/room';
 import { shuffle } from '../../utils/utils';
 import {
-  addGuessingOrderToSever,
-  addQuestionsToServer,
-  getNextQuestion
+  addGuessingOrder,
+  addQuestions,
+  getNextQuestion,
+  removeGuessingOrder,
+  removeQuestions
 } from '../handlers/game';
 
 import Question from '../../models/Question';
@@ -35,18 +38,60 @@ const intializeGameListeners = (socket, io) => {
       questions = questions.map((element) => element['question']);
       shuffle(questions);
 
-      await addQuestionsToServer(roomCode, questions);
+      await addQuestions(roomCode, questions);
 
       const gameState = await getGameState(roomCode);
       const parsedGameState = parseGameState(gameState);
       const players = Object.keys(parsedGameState['players']);
       shuffle(players);
 
+      await addGuessingOrder(roomCode, players);
+
+      const nextQuestion = await getNextQuestion(roomCode);
+
+      const updatedGameState = {
+        ...parsedGameState,
+        phase: QUESTION_PHASE,
+        currQuestion: nextQuestion
+      };
+
+      console.log('UPDATED GAME STATE', updatedGameState);
+
+      const formattedGameState = formatGameState(updatedGameState);
+      await updateGameStateInServer(formattedGameState);
+
+      // Tell client game has begun and proceed to the question phase
+      console.log(roomCode);
+      io.to(roomCode).emit('game-phase-question', updatedGameState);
+    } catch (err) {
+      socket.emit('error-game-start', err);
+      console.log('game start error occured', err);
+      throw err;
+    }
+  });
+
+  // Used when player licks next question
+  socket.on('game-next-question', async (data) => {
+    try {
+      const { roomCode } = data;
+
+      const nextQuestion = await getNextQuestion(roomCode);
+      const gameState = await getGameState(roomCode);
+      const parsedGameState = parseGameState(gameState);
+
+      // No more questions, end game and emit final state (with the scores)
+      // Might need to track question count if FE won't show that Next Question anymore
+      if (!nextQuestion) {
+        io.to(roomCode).emit('game-end', parsedGameState);
+        return;
+      }
+
+      const players = Object.keys(parsedGameState['players']);
+      shuffle(players);
+
       console.log(players);
 
       await addGuessingOrderToSever(roomCode, players);
-
-      const nextQuestion = await getNextQuestion(roomCode);
 
       const updatedGameState = {
         ...parsedGameState,
@@ -58,12 +103,40 @@ const intializeGameListeners = (socket, io) => {
       const formattedGameState = formatGameState(updatedGameState);
       await updateGameStateInServer(formattedGameState);
 
-      // Tell client room is created and he can join room
-      console.log(roomCode);
-      io.to(roomCode).emit('game-next-question', updatedGameState);
+      // Tell client to proceed to open question and let user answer
+      io.to(roomCode).emit('game-phase-question', updatedGameState);
     } catch (err) {
-      socket.emit('error-room-create', err);
-      console.log('create room error occured', err);
+      socket.emit('error-game-next-question', err);
+      console.log('game next question error occured', err);
+      throw err;
+    }
+  });
+
+  socket.on('game-end', async (data) => {
+    try {
+      const { roomCode } = data;
+
+      // Remove exisiting question and getting order states in Redis
+      await removeQuestions(roomCode);
+      await removeGuessingOrder(roomCode);
+
+      const gameState = await getGameState(roomCode);
+      const parsedGameState = parseGameState(gameState);
+
+      console.log('PARSED', parsedGameState);
+
+      // Send clean game state, since they are brought back to lobby where they can play again
+      const cleanGameState = cleanUpGameState(parsedGameState);
+
+      const formattedGameState = formatGameState(cleanGameState);
+      await updateGameStateInServer(formattedGameState);
+
+      console.log('CLEAN STATE', cleanGameState);
+      // Tell client game has ended and bring players back to the lobby
+      socket.emit('game-end', cleanGameState);
+    } catch (err) {
+      socket.emit('error-game-end', err);
+      console.log('game end error occured', err);
       throw err;
     }
   });

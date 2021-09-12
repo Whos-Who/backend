@@ -31,6 +31,39 @@ const intializePlayerState = (username) => {
   };
 };
 
+const cleanGameState = (roomCode, clientId) => {
+  return {
+    roomCode,
+    host: clientId,
+    phase: LOBBY_PHASE,
+    currQuestion: '',
+    currAnswerer: '',
+    playerCount: 0,
+    players: {}
+  };
+};
+
+const cleanUpGameState = (gameState) => {
+  const players = gameState.players;
+  const hostId = gameState.host;
+  const roomCode = gameState.roomCode;
+
+  let cleanedGameState = cleanGameState(roomCode, hostId);
+
+  console.log(players);
+  Object.entries(players).forEach(([clientId, state]) => {
+    cleanedGameState = addUserToRoom(
+      clientId,
+      state.username,
+      cleanedGameState
+    );
+  });
+
+  console.log('Cleaned Game State', cleanedGameState);
+
+  return cleanedGameState;
+};
+
 // Stringify nested structures to put in Redis, this reduces request rate and prevents overloading Redis since we r on free version :(
 const formatGameState = (gameState) => {
   return {
@@ -190,6 +223,7 @@ const leaveRoom = async (roomCode, clientId) => {
 export {
   intializeGameState,
   getGameState,
+  cleanUpGameState,
   intializePlayerState,
   formatGameState,
   parseGameState,
