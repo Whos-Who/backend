@@ -1,9 +1,11 @@
 # Socket.IO event listeners
 
-Documentation of Socket listeners, the data they should be receiving and a description of the client is supposed to use it. All event listeners require query parameters `clientId`, a UUID.
-
+- Documentation of Socket listeners, the data they should be receiving and a description of the client is supposed to use it.
+- All event listeners require query parameters `clientId`, a UUID.
+- `data` in the socket listeners / emitters is a JSON object and refer to it as Required Payload throughout the documentation
 
 # Table of Content
+
 - [How to use](#How to use)
 - [Room](#room)
   - [room-create](#room-create)
@@ -13,6 +15,7 @@ Documentation of Socket listeners, the data they should be receiving and a descr
 - [Misc](#misc)
 
 ## How to use
+
 To use the web sockets, on the client side, you first have to establish a connection with the server. This can be done by installing `socket.io-client` library, and setting up a connection `io(<your-server-url>)`. You can attach the `clientId` and as a query param to the connection so that it is sent over everytime.
 
 To trigger and listen to certain events on the client side, you can use `socket.emit(msg, data)` and `socket.on(msg, data)`.
