@@ -12,6 +12,7 @@ const intializeGameState = (roomCode, clientId, username) => {
     currQuestion: '',
     currAnswerer: '',
     playerCount: 1,
+    questionCount: 0,
     players: {
       [clientId]: intializePlayerState(username)
     }
@@ -44,6 +45,8 @@ const parseGameState = (gameState) => {
 
   return {
     ...gameState,
+    playerCount: Number(gameState.playerCount),
+    questionCount: Number(gameState.questionCount),
     players: players
   };
 };
@@ -86,7 +89,7 @@ const removeRoom = async (gamestate) => {
 const addUserToRoom = (clientId, username, gameState) => {
   const updatedGameState = {
     ...gameState,
-    playerCount: Number(gameState.playerCount) + 1,
+    playerCount: gameState.playerCount + 1,
     players: {
       ...gameState['players'],
       [clientId]: intializePlayerState(username)
