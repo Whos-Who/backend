@@ -36,16 +36,13 @@ const intializeGameListeners = (socket, io) => {
       });
 
       questions = questions.map((element) => element['question']);
+      const numQuestions = questions.length;
       shuffle(questions);
 
       const gameState = await Promise.all([
         addQuestions(roomCode, questions),
         getGameState(roomCode)
-      ]).then((res) => {
-        // res[0] refers to res of addQuestions
-        console.log(res);
-        return res[1];
-      });
+      ]).then((res) => res[1]);
 
       console.log(gameState);
 
@@ -56,15 +53,10 @@ const intializeGameListeners = (socket, io) => {
       const players = Object.keys(parsedGameState['players']);
       shuffle(players);
 
-      const nextQuestion = Promise.all([
+      const nextQuestion = await Promise.all([
         addGuessingOrder(roomCode, players),
         getNextQuestion(roomCode)
-      ]).then((res) => {
-        // res[0] refers to res of addQuestions
-
-        console.log(res);
-        return res[1];
-      });
+      ]).then((res) => res[1]);
 
       // await addGuessingOrder(roomCode, players);
 
@@ -73,7 +65,8 @@ const intializeGameListeners = (socket, io) => {
       const updatedGameState = {
         ...parsedGameState,
         phase: QUESTION_PHASE,
-        currQuestion: nextQuestion
+        currQuestion: nextQuestion,
+        questionCount: numQuestions - 1
       };
 
       console.log('UPDATED GAME STATE', updatedGameState);
@@ -96,13 +89,19 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode } = data;
 
-      const nextQuestion = await getNextQuestion(roomCode);
-      const gameState = await getGameState(roomCode);
+      const [nextQuestion, gameState] = await Promise.all([
+        getNextQuestion(roomCode),
+        getGameState(roomCode)
+      ]).then((res) => {
+        return res;
+      });
+      // const gameState = await getGameState(roomCode);
       const parsedGameState = parseGameState(gameState);
 
       // No more questions, end game and emit final state (with the scores)
       // Might need to track question count if FE won't show that Next Question anymore
-      if (!nextQuestion) {
+      if (!parsedGameState.questionCount) {
+        console.log('No questions left!');
         io.to(roomCode).emit('game-end', parsedGameState);
         return;
       }
@@ -110,19 +109,22 @@ const intializeGameListeners = (socket, io) => {
       const players = Object.keys(parsedGameState['players']);
       shuffle(players);
 
-      console.log(players);
-
-      await addGuessingOrderToSever(roomCode, players);
-
       const updatedGameState = {
         ...parsedGameState,
         phase: QUESTION_PHASE,
-        currQuestion: nextQuestion
+        currQuestion: nextQuestion,
+        questionCount: parsedGameState.questionCount - 1
       };
 
       console.log('UPDATED GAME STATE', updatedGameState);
       const formattedGameState = formatGameState(updatedGameState);
-      await updateGameStateInServer(formattedGameState);
+
+      await Promise.all([
+        updateGameStateInServer(formattedGameState),
+        addGuessingOrder(roomCode, players)
+      ]);
+      // await updateGameStateInServer(formattedGameState);
+      // await addGuessingOrder(roomCode, players);
 
       // Tell client to proceed to open question and let user answer
       io.to(roomCode).emit('game-phase-question', updatedGameState);
@@ -138,10 +140,19 @@ const intializeGameListeners = (socket, io) => {
       const { roomCode } = data;
 
       // Remove exisiting question and getting order states in Redis
-      await removeQuestions(roomCode);
-      await removeGuessingOrder(roomCode);
+      const gameState = await Promise.all(
+        getGameState(roomCode),
+        removeQuestions(roomCode),
+        removeGuessingOrder(roomCode)
+      ).then((res) => {
+        console.log(res);
+        return res[0];
+      });
+      // await removeQuestions(roomCode);
+      // await removeGuessingOrder(roomCode);
 
-      const gameState = await getGameState(roomCode);
+      // const gameState = await getGameState(roomCode);
+      console.log('GAAAME', gameState);
       const parsedGameState = parseGameState(gameState);
 
       console.log('PARSED', parsedGameState);

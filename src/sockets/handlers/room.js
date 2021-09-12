@@ -85,18 +85,18 @@ const parseGameState = (gameState) => {
   };
 };
 
-const getGameState = (roomCode) => {
+const getGameState = async (roomCode) => {
   const key = `${ROOM_PREFIX}-${roomCode}`;
 
-  const gameState = new Promise((resolve, reject) => {
+  const gameState = await new Promise((resolve, reject) => {
     redisClient.HGETALL(key, (err, res) => {
       if (err) return reject(err);
 
-      console.log(res);
       resolve(res);
     });
   });
 
+  console.log('HEREE', gameState);
   return gameState;
 };
 
