@@ -10,7 +10,7 @@ const intializeRoomListeners = (socket, io) => {
     try {
       const { username } = data;
 
-      const roomCode = socket.id;
+      const roomCode = 123; // socket.id;
       const gameState = await createRoom(roomCode, clientId, username);
 
       // Tell client room is created and he can join room
