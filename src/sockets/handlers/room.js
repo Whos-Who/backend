@@ -87,37 +87,22 @@ const parseGameState = (gameState) => {
 
 const getGameState = async (roomCode) => {
   const key = `${ROOM_PREFIX}-${roomCode}`;
+  const gameState = await redisClient.hgetall(key);
 
-  const gameState = await new Promise((resolve, reject) => {
-    redisClient.HGETALL(key, (err, res) => {
-      if (err) return reject(err);
-
-      resolve(res);
-    });
-  });
-
-  console.log('HEREE', gameState);
   return gameState;
 };
 
 const updateGameStateInServer = async (gamestate) => {
   const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
 
-  await Promise.all(
-    Object.entries(gamestate).map((entry) => {
-      const field = entry[0];
-      const val = entry[1];
-
-      redisClient.HSET(key, field, val);
-    })
-  );
+  await redisClient.hmset(key, gamestate);
 };
 
 const removeRoom = async (gamestate) => {
   const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
 
   console.log(key);
-  return await redisClient.DEL(key);
+  await redisClient.del(key);
 };
 
 const addUserToRoom = (clientId, username, gameState) => {
@@ -139,7 +124,7 @@ const removeUserFromRoom = (clientId, gameState) => {
 
   const updatedGameState = {
     ...gameState,
-    playerCount: Number(gameState.playerCount) - 1
+    playerCount: gameState.playerCount - 1
   };
 
   return updatedGameState;
