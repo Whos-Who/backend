@@ -1,6 +1,6 @@
 import { createRoom, joinRoom, leaveRoom, removeRoom } from '../handlers/room';
 
-const intializeGameroomListeners = (socket, io) => {
+const intializeRoomListeners = (socket, io) => {
   // Retrieves from socket query parameters
   const { clientId } = socket.handshake.query;
   const socketId = socket.id;
@@ -77,4 +77,4 @@ const intializeGameroomListeners = (socket, io) => {
   });
 };
 
-export { intializeGameroomListeners };
+export { intializeRoomListeners };

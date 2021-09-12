@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { intializeGameroomListeners } from './listeners/room';
+import { intializeRoomListeners } from './listeners/room';
 
 export const initializeWebSockets = (server) => {
   const io = new Server(server, {
@@ -15,7 +15,7 @@ export const initializeWebSockets = (server) => {
     io.send(socket.id).emit('WELCOME', {});
 
     // Set up socket listeners for room events
-    intializeGameroomListeners(socket, io);
+    intializeRoomListeners(socket, io);
 
     // TO DO:, set up socket listener for gmaeplay events
 
