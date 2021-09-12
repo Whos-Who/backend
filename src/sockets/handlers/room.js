@@ -103,7 +103,7 @@ const getGameState = async (roomCode) => {
 const updateGameStateInServer = async (gamestate) => {
   const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
 
-  Promise.all(
+  await Promise.all(
     Object.entries(gamestate).map((entry) => {
       const field = entry[0];
       const val = entry[1];
@@ -211,7 +211,7 @@ const leaveRoom = async (roomCode, clientId) => {
   ) {
     const newHost = pickNewHost(updatedGameState);
     updatedGameState['host'] = newHost;
-    console.log('NEW', newHost);
+    console.log('NEW HOST', newHost);
   }
 
   const formattedGameState = formatGameState(updatedGameState);
