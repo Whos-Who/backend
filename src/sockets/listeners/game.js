@@ -38,16 +38,37 @@ const intializeGameListeners = (socket, io) => {
       questions = questions.map((element) => element['question']);
       shuffle(questions);
 
-      await addQuestions(roomCode, questions);
+      const gameState = await Promise.all([
+        addQuestions(roomCode, questions),
+        getGameState(roomCode)
+      ]).then((res) => {
+        // res[0] refers to res of addQuestions
+        console.log(res);
+        return res[1];
+      });
 
-      const gameState = await getGameState(roomCode);
+      console.log(gameState);
+
+      // await addQuestions(roomCode, questions);
+
+      // const gameState = await getGameState(roomCode);
       const parsedGameState = parseGameState(gameState);
       const players = Object.keys(parsedGameState['players']);
       shuffle(players);
 
-      await addGuessingOrder(roomCode, players);
+      const nextQuestion = Promise.all([
+        addGuessingOrder(roomCode, players),
+        getNextQuestion(roomCode)
+      ]).then((res) => {
+        // res[0] refers to res of addQuestions
 
-      const nextQuestion = await getNextQuestion(roomCode);
+        console.log(res);
+        return res[1];
+      });
+
+      // await addGuessingOrder(roomCode, players);
+
+      // const nextQuestion = await getNextQuestion(roomCode);
 
       const updatedGameState = {
         ...parsedGameState,
