@@ -23,26 +23,14 @@ const addGuessingOrder = async (roomCode, players) => {
 
 const getNextQuestion = async (roomCode) => {
   const key = `${QUESTIONS_PREFIX}-${roomCode}`;
-  const nextQuestion = new Promise((resolve, reject) => {
-    redisClient.LPOP(key, (err, res) => {
-      if (err) return reject(err);
-
-      resolve(res);
-    });
-  });
+  const nextQuestion = await redisClient.lpop(key);
 
   return nextQuestion;
 };
 
 const getNextGuesser = async (roomCode) => {
   const key = `${GUESSING_ORDER}-${roomCode}`;
-  const nextGuesser = new Promise((resolve, reject) => {
-    redisClient.LPOP(key, (err, res) => {
-      if (err) return reject(err);
-
-      resolve(res);
-    });
-  });
+  const nextGuesser = await redisClient.lpop(key);
 
   return nextGuesser;
 };
@@ -50,13 +38,13 @@ const getNextGuesser = async (roomCode) => {
 const removeQuestions = async (roomCode) => {
   const key = `${QUESTIONS_PREFIX}-${roomCode}`;
 
-  await redisClient.DEL(key);
+  await redisClient.del(key);
 };
 
 const removeGuessingOrder = async (roomCode) => {
   const key = `${GUESSING_ORDER}-${roomCode}`;
 
-  await redisClient.DEL(key);
+  await redisClient.del(key);
 };
 
 export {

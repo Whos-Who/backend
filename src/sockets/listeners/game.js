@@ -140,22 +140,16 @@ const intializeGameListeners = (socket, io) => {
       const { roomCode } = data;
 
       // Remove exisiting question and getting order states in Redis
-      const gameState = await Promise.all(
+      const gameState = await Promise.all([
         getGameState(roomCode),
         removeQuestions(roomCode),
         removeGuessingOrder(roomCode)
-      ).then((res) => {
+      ]).then((res) => {
         console.log(res);
         return res[0];
       });
-      // await removeQuestions(roomCode);
-      // await removeGuessingOrder(roomCode);
 
-      // const gameState = await getGameState(roomCode);
-      console.log('GAAAME', gameState);
       const parsedGameState = parseGameState(gameState);
-
-      console.log('PARSED', parsedGameState);
 
       // Send clean game state, since they are brought back to lobby where they can play again
       const cleanGameState = cleanUpGameState(parsedGameState);

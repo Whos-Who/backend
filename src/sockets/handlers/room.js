@@ -89,6 +89,7 @@ const getGameState = async (roomCode) => {
   const key = `${ROOM_PREFIX}-${roomCode}`;
   const gameState = await redisClient.hgetall(key);
 
+  console.log('HEREsaklrhqiwuhre', gameState);
   return gameState;
 };
 
