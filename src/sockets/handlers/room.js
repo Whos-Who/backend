@@ -51,10 +51,10 @@ const parseGameState = (gameState) => {
   };
 };
 
-const getGameState = (roomCode) => {
+const getGameState = async (roomCode) => {
   const key = `${ROOM_PREFIX}-${roomCode}`;
 
-  const gameState = new Promise((resolve, reject) => {
+  const gameState = await new Promise((resolve, reject) => {
     redisClient.HGETALL(key, (err, res) => {
       if (err) return reject(err);
 
@@ -177,7 +177,7 @@ const leaveRoom = async (roomCode, clientId) => {
   ) {
     const newHost = pickNewHost(updatedGameState);
     updatedGameState['host'] = newHost;
-    console.log('NEW', newHost);
+    console.log('NEW HOST', newHost);
   }
 
   const formattedGameState = formatGameState(updatedGameState);
