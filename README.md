@@ -4,18 +4,21 @@ Backend repository for the assignment 3
 
 ## Table of content
 
-- [Environment Set up](#environment-set-up)
-  - [Installing Dependencies](#installing-dependencies)
-  - [Docker Set Up](docker-set-up)
-  - [Running Redis locally](#running-redis-locally)
-  - [Running PostgreSQL locally](#running-postgresql-locally)
-  - [Running migrations](#running-migrations)
+- [CS3216 Assignment 3](#cs3216-assignment-3)
+  - [Table of content](#table-of-content)
+  - [Environment Set up](#environment-set-up)
+    - [Installing Dependencies](#installing-dependencies)
+    - [Docker Set Up](#docker-set-up)
+    - [Running Redis locally](#running-redis-locally)
+    - [Running PostgreSQL locally](#running-postgresql-locally)
+    - [Running migrations](#running-migrations)
   - [Running seed files](#running-seed-files)
-- [Deployment](#deployment)
-- [Documentation](#documentation)
-  - [REST API endpoints](#rest-api-endpoints)
-  - [Socket Events](#socket-events)
-  - [Redis storage](#redis-storage)
+    - [Linting, Formatting and CI Check](#linting-formatting-and-ci-check)
+  - [Deployment](#deployment)
+  - [Documentation](#documentation)
+    - [REST API endpoints](#rest-api-endpoints)
+    - [Socket Events](#socket-events)
+    - [Redis Key-value mappings](#redis-key-value-mappings)
 
 ## Environment Set up
 
@@ -36,26 +39,32 @@ Backend repository for the assignment 3
 4. To remove your container, run `docker compose down`
 
 ### Running Redis locally
+
 1. Make sure your docker container is running, if not set up yet, refer to the above section
 2. Install `redis-cli` on you terminal
 3. After successfully installing, run `redis-cli`, enter `PING`
 4. If your Redis Server replies with `PONG`, your Redis Server is running correctly
 
 ### Running PostgreSQL locally
+
 1. Make sure your docker container is running, if not set up yet, refer to the above section
 2. You can use a Database Management tool like PgAdmin or SequelPro to connect to the local PostgreSQL
 3. Connect to the server with the following settings:
-  - Database: assignment-3
-  - Host: localhost
-  - Port: 5432 
+
+- Database: assignment-3
+- Host: localhost
+- Port: 5432
 
 ### Running migrations
+
 To update your local database with the latest schemas, run `npx sequelize-cli db:migrate`
 
 ## Running seed files
+
 To be updated
 
 ### Linting, Formatting and CI Check
+
 1. Install Prettier extension on VSCode
 2. Set it as your code formatter and set it to format document on save (which will make things easier)
 3. Code should be auto-formatted on save
@@ -63,17 +72,20 @@ To be updated
 5. CI check enforced just for linting
 
 ## Deployment
+
 1. Configured auto deployment when there are changes to main branch
 2. Check environment `assignment-3-web-backend` to check deployment status
 
 ## Documentation
 
 ### REST API endpoints
+
 To be updated
 
 ### Socket Events
-To be updated
 
-### Redis storage
-To be updated
+[Socket Listeners](docs/Socket.Events.md)
 
+### Redis Key-value mappings
+
+[Redis store](docs/Redis.Storage.md)
