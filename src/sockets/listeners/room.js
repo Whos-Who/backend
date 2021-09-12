@@ -10,12 +10,14 @@ const intializeRoomListeners = (socket, io) => {
     try {
       const { username } = data;
 
-      const roomCode = socket.id;
+      // const roomCode = socket.id;
+
+      const roomCode = 123;
       const gameState = createRoom(roomCode, clientId, username);
 
       // Tell client room is created and he can join room
       socket.emit('room-join', gameState);
-      socket.join(gameState);
+      socket.join(roomCode);
     } catch (err) {
       socket.emit('error-room-create', err);
       console.log('create room error occured', err);
@@ -32,7 +34,7 @@ const intializeRoomListeners = (socket, io) => {
 
       // Tell client room has been found and he can join room
       socket.emit('room-join', gameState);
-      socket.join(gameState);
+      socket.join(roomCode);
     } catch (err) {
       socket.emit('error-room-join', err);
       console.log('join room error occured', err);

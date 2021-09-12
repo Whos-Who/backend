@@ -1,5 +1,5 @@
 import { redisClient } from '../../database/redis';
-import { ROOM_PREFIX } from '../../const/room';
+import { ROOM_PREFIX } from '../../const/redis';
 import { LOBBY_PHASE } from '../../const/game';
 import { canJoin } from '../../utils/sockets/room';
 
@@ -41,9 +41,11 @@ const formatGameState = (gameState) => {
 
 const parseGameState = (gameState) => {
   const players = JSON.parse(gameState.players);
+  const playerCount = Number(gameState.playerCount);
 
   return {
     ...gameState,
+    playerCount: playerCount,
     players: players
   };
 };
