@@ -10,6 +10,8 @@ const intializeRoomListeners = (socket, io) => {
     try {
       const { username } = data;
 
+      if (!username) throw new Error('Missing field!');
+
       const roomCode = 123; //socket.id;
       const gameState = await createRoom(roomCode, clientId, username);
 
@@ -28,6 +30,8 @@ const intializeRoomListeners = (socket, io) => {
     try {
       const { roomCode, username } = data;
 
+      if (!username || !roomCode) throw new Error('Missing field!');
+
       const gameState = await joinRoom(roomCode, clientId, username);
 
       // Tell client room has been found and he can join room
@@ -44,6 +48,8 @@ const intializeRoomListeners = (socket, io) => {
   socket.on('room-leave', async (data) => {
     try {
       const { roomCode } = data;
+
+      if (!roomCode) throw new Error('Missing field!');
 
       const [gameState, newHost] = await leaveRoom(roomCode, clientId);
 

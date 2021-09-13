@@ -2,7 +2,7 @@
 
 - Documentation of Socket listeners, the data they should be receiving and a description of the client is supposed to use it.
 - All event listeners require query parameters `clientId`, a UUID.
-- `data` in the socket listeners / emitters is a JSON object and refer to it as Required Payload throughout the documentation
+- `data` in the socket listeners is a JSON object, which is referred to as `Required Payload` throughout the documentation
 
 # Table of Content
 
@@ -28,7 +28,7 @@ I would also recommend that you set up the Backend repository locally to test th
 ### room-create
 
 ```
-socket.emit('room-create', (data) => {....})
+socket.on('room-create', (data) => {....})
 ```
 
 ### Description
@@ -36,7 +36,7 @@ socket.emit('room-create', (data) => {....})
 Event listener that will respond when client decides to create a room, this listener requires the
 `username`, in addition to the query parameters.
 
-### Required Payload
+### Required Payload Attributes
 
 `username` - username of the client attempting to create a room.
 
@@ -53,7 +53,7 @@ Server will emit a `error-room-create` to the client, together with the error me
 ### room-join
 
 ```
-socket.emit('room-join', (data) => {....})
+socket.on('room-join', (data) => {....})
 ```
 
 ### Description
@@ -61,7 +61,7 @@ socket.emit('room-join', (data) => {....})
 Event listener that will respond when client decides to join a room, this listener requires the
 `username` and `roomCode`, in addition to the query parameters.
 
-### Required Payload
+### Required Payload Attributes
 
 `username` - username of the client attempting to join a room.
 `roomCode` - room ID, which other users can join the room
@@ -79,7 +79,7 @@ Server will emit a `error-room-join` to the client, together with the error mess
 ### room-leave
 
 ```
-socket.emit('room-leave', (data) => {....})
+socket.on('room-leave', (data) => {....})
 ```
 
 ### Description
@@ -87,20 +87,24 @@ socket.emit('room-leave', (data) => {....})
 Event listener that will respond when client decides to leave a room, this listener requires the
 `roomCode`, in addition to the query parameters.
 
-### Required Payload
+### Required Payload Attributes
 
 `roomCode` - room id of the client attempting to leave.
 
 ### Response
 
 **Success**
+
 Server will emit a `room-leave` to the client together with the `gameState` back to the client, indicating that the client can join the room.
 
-Server will also emit a `user-leave` event to announce to the all clients in the room which user had left.
+Server will also emit a `user-leave` event to announce to the all clients in the room which user had left. Response is JSON object with the following attributes:
+- `clientId` - clientId of user who left
+- `gameState` - updated gameState
 
-If the previous host left, the server will emit a `new-host` event to announce who is the new host.
+If the previous host left, the server will emit a `new-host` event to announce who is the new host. Response is `clientId` - the clientId of user who left.
 
 **Failure**
+
 Server will emit a `error-room-leave` to the client, together with the error message `err`, indicating an error occured.
 
 ## Game
