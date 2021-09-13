@@ -4,7 +4,7 @@ import {
   ROOM_PREFIX,
   QUESTIONS_PREFIX,
   GUESSING_ORDER_PREFIX
-} from '../const/room';
+} from '../const/redis';
 
 async function destroyRoom(req, res, next) {
   try {

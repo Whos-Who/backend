@@ -114,6 +114,10 @@ const clearPlayersAnswersState = (players) => {
   return updatedPlayers;
 };
 
+const checkCorrectAnswer = (gameState, clientId, answer) => {
+  return gameState[clientId]['currAnswer']['value'] === answer;
+};
+
 export {
   addQuestions,
   addGuessingOrder,
@@ -123,5 +127,6 @@ export {
   removeGuessingOrder,
   updateCorrectGuess,
   prepareForNextQuestion,
-  getRemainingAnswers
+  getRemainingAnswers,
+  checkCorrectAnswer
 };

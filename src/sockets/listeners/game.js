@@ -15,7 +15,8 @@ import {
   removeQuestions,
   updateCorrectGuess,
   prepareForNextQuestion,
-  getRemainingAnswers
+  getRemainingAnswers,
+  checkCorrectAnswer
 } from '../handlers/game';
 
 import Question from '../../models/Question';
@@ -180,7 +181,11 @@ const intializeGameListeners = (socket, io) => {
       const gameState = await getGameState(roomCode);
       const parsedGameState = parseGameState(gameState);
 
-      const result = selectedPlayerId == selectedAnswer;
+      const result = checkCorrectAnswer(
+        gameState,
+        selectedPlayerId,
+        selectedAnswer
+      );
 
       let updatedGameState;
 
@@ -287,45 +292,6 @@ const intializeGameListeners = (socket, io) => {
       throw err;
     }
   });
-
-  // socket.on('game-phase-guess-turn-timeout', async (data) => {
-  //   const { gameState } = data;
-
-  //   const formattedGameState = formatGameState(gameState);
-  //   await updateGameStateInServer(formattedGameState);
-
-  //   io.to(roomCode).emit(
-  //     'game-phase-turn-reveal',
-  //     updatedGameState,
-  //     'Time out!'
-  //   );
-  // });
-
-  // socket.on('game-scores', async (data) => {
-  //   try {
-  //     const { roomCode } = data;
-
-  //     const gameState = await getGameState(roomCode);
-  //     const parsedGameState = parseGameState(gameState);
-
-  //     const updatedGameState = prepareForNextQuestion(parsedGameState);
-  //     console.log('UPDATED', updatedGameState);
-
-  //     const formattedGameState = formatGameState(updatedGameState);
-  //     await updateGameStateInServer(formattedGameState);
-  //     // Prepare gameState for next question
-
-  //     console.log('SCOREBOARD', '- UPDATED  GAME STATE', updatedGameState);
-  //     io.to(roomCode).emit('game-phase-scores', parsedGameState);
-  //   } catch (err) {
-  //     socket.emit('error-room-create', err);
-  //     console.log('create room error occured', err);
-  //     throw err;
-  //   }
-  // });
-
-  // TO -DO
-  // TIMER
 };
 
 export { intializeGameListeners };
