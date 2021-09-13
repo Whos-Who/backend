@@ -13,6 +13,8 @@ const intializeGameState = (roomCode, clientId, username) => {
     currAnswerer: '',
     playerCount: 1,
     questionCount: 0,
+    selectedPlayerId: '',
+    selectedAnswerClientId: '',
     players: {
       [clientId]: intializePlayerState(username)
     }
