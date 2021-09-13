@@ -12,9 +12,9 @@ room-<roomId>:
   currQuestion: string
   currAnswerer: string
   playerCount: number
-  questionCount: number,
+  questionsLeft: number,
   selectedPlayerId: string,
-  selectedAnswerClientId: string,
+  selectedAnswer: string,
   players: map<clientId,PlayerState>
 
 PlayerState is a map of clientId to listed attributes

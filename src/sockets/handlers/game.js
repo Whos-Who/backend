@@ -1,5 +1,5 @@
 import { SCOREBOARD_PHASE } from '../../const/game';
-import { QUESTIONS_PREFIX, GUESSING_ORDER } from '../../const/redis';
+import { QUESTIONS_PREFIX, GUESSING_ORDER_PREFIX } from '../../const/redis';
 import { redisClient } from '../../database/redis';
 
 const addQuestions = async (roomCode, questions) => {
@@ -13,7 +13,7 @@ const addQuestions = async (roomCode, questions) => {
 };
 
 const addGuessingOrder = async (roomCode, players) => {
-  const key = `${GUESSING_ORDER}-${roomCode}`;
+  const key = `${GUESSING_ORDER_PREFIX}-${roomCode}`;
 
   // First element in array is treated as the list key in Redis
   players.unshift(key);
@@ -30,7 +30,7 @@ const getNextQuestion = async (roomCode) => {
 };
 
 const getNextGuesser = async (roomCode) => {
-  const key = `${GUESSING_ORDER}-${roomCode}`;
+  const key = `${GUESSING_ORDER_PREFIX}-${roomCode}`;
   const nextGuesser = await redisClient.lpop(key);
   await redisClient.rpush(key, nextGuesser);
 
@@ -44,7 +44,7 @@ const removeQuestions = async (roomCode) => {
 };
 
 const removeGuessingOrder = async (roomCode) => {
-  const key = `${GUESSING_ORDER}-${roomCode}`;
+  const key = `${GUESSING_ORDER_PREFIX}-${roomCode}`;
 
   await redisClient.del(key);
 };
@@ -90,7 +90,7 @@ const prepareForNextQuestion = (gameState) => {
     currQuestion: '',
     currAnswerer: '',
     selectedPlayerId: '',
-    selectedAnswerClientId: '',
+    selectedAnswer: '',
     players: clearPlayersAnswersState(gameState.players)
   };
 };

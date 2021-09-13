@@ -74,7 +74,7 @@ const intializeGameListeners = (socket, io) => {
         ...parsedGameState,
         phase: QUESTION_PHASE,
         currQuestion: nextQuestion,
-        questionCount: numQuestions - 1
+        questionsLeft: numQuestions - 1
       };
 
       console.log('START GAME', '- UPDATED GAME STATE', updatedGameState);
@@ -107,7 +107,7 @@ const intializeGameListeners = (socket, io) => {
 
       // No more questions, end game and emit final state (with the scores)
       // Might need to track question count if FE won't show that Next Question anymore
-      if (!parsedGameState.questionCount) {
+      if (!parsedGameState.questionsLeft) {
         console.log('No questions left!');
         io.to(roomCode).emit('game-end', parsedGameState);
         return;
@@ -120,7 +120,7 @@ const intializeGameListeners = (socket, io) => {
         ...parsedGameState,
         phase: QUESTION_PHASE,
         currQuestion: nextQuestion,
-        questionCount: parsedGameState.questionCount - 1
+        questionsLeft: parsedGameState.questionsLeft - 1
       };
 
       console.log('NEXT QUESTION', '- UPDATED GAME STATE', updatedGameState);
@@ -175,12 +175,12 @@ const intializeGameListeners = (socket, io) => {
 
   socket.on('game-answer-submission', async (data) => {
     try {
-      const { roomCode, selectedPlayerId, selectedAnswerClientId } = data;
+      const { roomCode, selectedPlayerId, selectedAnswer } = data;
 
       const gameState = await getGameState(roomCode);
       const parsedGameState = parseGameState(gameState);
 
-      const result = selectedPlayerId == selectedAnswerClientId;
+      const result = selectedPlayerId == selectedAnswer;
 
       let updatedGameState;
 
@@ -189,11 +189,11 @@ const intializeGameListeners = (socket, io) => {
           ...parsedGameState,
           phase: TURN_REVEAL_PHASE,
           selectedPlayerId,
-          selectedAnswerClientId,
+          selectedAnswer,
           players: updateCorrectGuess(
             gameState.currAnswerer,
             parsedGameState.players,
-            selectedAnswerClientId
+            selectedAnswer
           )
         };
       } else {
@@ -201,7 +201,7 @@ const intializeGameListeners = (socket, io) => {
           ...parsedGameState,
           phase: TURN_REVEAL_PHASE,
           selectedPlayerId,
-          selectedAnswerClientId
+          selectedAnswer
         };
       }
 
@@ -270,7 +270,7 @@ const intializeGameListeners = (socket, io) => {
             ...parsedGameState,
             phase: TURN_REVEAL_PHASE,
             selectedPlayerId: '',
-            selectedAnswerClientId: ''
+            selectedAnswer: ''
           };
 
           const formattedGameState = formatGameState(unansweredGameState);
