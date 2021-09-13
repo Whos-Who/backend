@@ -9,13 +9,19 @@ import { shuffle } from '../../utils/utils';
 import {
   addGuessingOrder,
   addQuestions,
+  getNextGuesser,
   getNextQuestion,
   removeGuessingOrder,
-  removeQuestions
+  removeQuestions,
+  updateCorrectGuess
 } from '../handlers/game';
 
 import Question from '../../models/Question';
-import { QUESTION_PHASE } from '../../const/game';
+import {
+  QUESTION_PHASE,
+  TURN_GUESS_PHASE,
+  TURN_REVEAL_PHASE
+} from '../../const/game';
 
 const intializeGameListeners = (socket, io) => {
   // Retrieves from socket query parameters
@@ -145,7 +151,6 @@ const intializeGameListeners = (socket, io) => {
         removeQuestions(roomCode),
         removeGuessingOrder(roomCode)
       ]).then((res) => {
-        console.log(res);
         return res[0];
       });
 
@@ -159,13 +164,99 @@ const intializeGameListeners = (socket, io) => {
 
       console.log('CLEAN STATE', cleanGameState);
       // Tell client game has ended and bring players back to the lobby
-      socket.emit('game-end', cleanGameState);
+      socket.emit('game-close', cleanGameState);
     } catch (err) {
       socket.emit('error-game-end', err);
       console.log('game end error occured', err);
       throw err;
     }
   });
+
+  socket.on('game-answer-submission', async (data) => {
+    try {
+      const { roomCode, chosenClientId, answerClientId } = data;
+
+      const gameState = await getGameState(roomCode);
+      const parsedGameState = parseGameState(gameState);
+
+      const result = chosenClientId == answerClientId;
+
+      let updatedGameState;
+
+      if (result) {
+        updatedGameState = {
+          ...parsedGameState,
+          phase: TURN_REVEAL_PHASE,
+          players: updateCorrectGuess(
+            clientId,
+            parsedGameState.players,
+            answerClientId
+          )
+        };
+      } else {
+        updatedGameState = {
+          ...parsedGameState,
+          phase: TURN_REVEAL_PHASE
+        };
+      }
+
+      const formattedGameState = formatGameState(updatedGameState);
+      await updateGameStateInServer(formattedGameState);
+
+      io.to(roomCode).emit('game-turn-reveal', updatedGameState);
+    } catch (err) {
+      socket.emit('error-room-create', err);
+      console.log('create room error occured', err);
+      throw err;
+    }
+  });
+
+  socket.on('game-turn-guess', async (data) => {
+    try {
+      const { roomCode } = data;
+
+      const gameState = await getGameState(roomCode);
+      const parsedGameState = parseGameState(gameState);
+
+      const nextGuesser = getNextGuesser(roomCode);
+
+      const updatedGameState = {
+        ...parsedGameState,
+        phase: TURN_GUESS_PHASE,
+        currAnswerer: nextGuesser
+      };
+
+      const formattedGameState = formatGameState(updatedGameState);
+      await updateGameStateInServer(formattedGameState);
+
+      io.to(roomCode).emit('game-phase-turn-guess', updatedGameState);
+    } catch (err) {
+      socket.emit('error-room-create', err);
+      console.log('create room error occured', err);
+      throw err;
+    }
+  });
+
+  socket.on('game-scores', async (data) => {
+    try {
+      const { roomCode } = data;
+
+      const gameState = await getGameState(roomCode);
+      const parsedGameState = parseGameState(gameState);
+
+      io.to(roomCode).emit('game-phase-scores', updatedGameState);
+    } catch (err) {
+      socket.emit('error-room-create', err);
+      console.log('create room error occured', err);
+      throw err;
+    }
+  });
+
+  // TO -DO
+  // SCOREBOARD
+  // NEXT TURN
+  // SUBMIT ANS
+  // TURN REVEAL
 
   // socket.on('room-create', async (data) => {
   //   try {

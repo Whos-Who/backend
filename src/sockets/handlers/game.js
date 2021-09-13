@@ -31,6 +31,7 @@ const getNextQuestion = async (roomCode) => {
 const getNextGuesser = async (roomCode) => {
   const key = `${GUESSING_ORDER}-${roomCode}`;
   const nextGuesser = await redisClient.lpop(key);
+  await redisClient.rpush(key, nextGuesser);
 
   return nextGuesser;
 };
@@ -47,11 +48,42 @@ const removeGuessingOrder = async (roomCode) => {
   await redisClient.del(key);
 };
 
+const getScore = (players) => {
+  const multiplier = Object.values(players).reduce((total, player) => {
+    return total + player.currAnswer.isGuessed ? 0 : 1;
+  }, 0);
+  return multiplier;
+};
+
+const updatePlayerScore = (clientId, players) => {
+  const score = getScore(players);
+
+  const newPlayerState = {
+    ...players[clientId],
+    score: players[clientId]['score'] + score
+  };
+
+  players = {
+    [clientId]: newPlayerState
+  };
+
+  return players;
+};
+
+const updateCorrectGuess = (clientId, players, answerClientId) => {
+  const updatedPlayers = updatePlayerScore(clientId, players);
+
+  updatedPlayers[answerClientId]['currAnswer']['isGuessed'] = true;
+
+  return updatedPlayers;
+};
+
 export {
   addQuestions,
   addGuessingOrder,
   getNextGuesser,
   getNextQuestion,
   removeQuestions,
-  removeGuessingOrder
+  removeGuessingOrder,
+  updateCorrectGuess
 };
