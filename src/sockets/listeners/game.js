@@ -36,6 +36,9 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode, deckId } = data;
 
+      if (!roomCode || !deckId)
+        throw new Error('Missing fields for game start');
+
       let questions = await Question.findAll({
         where: {
           deckId
@@ -197,8 +200,7 @@ const intializeGameListeners = (socket, io) => {
           selectedAnswer,
           players: updateCorrectGuess(
             gameState.currAnswerer,
-            parsedGameState.players,
-            selectedAnswer
+            parsedGameState.players
           )
         };
       } else {

@@ -72,14 +72,14 @@ const updatePlayerScore = (clientId, players) => {
   return newPlayers;
 };
 
-const updateCorrectGuess = (clientId, players, answerClientId) => {
+const updateCorrectGuess = (clientId, players) => {
   const updatedPlayers = updatePlayerScore(clientId, players);
 
   console.log('UPDATED SCORE', updatedPlayers, answerClientId);
 
-  updatedPlayers[answerClientId]['currAnswer']['isGuessed'] = true;
+  updatedPlayers[clientId]['currAnswer']['isGuessed'] = true;
 
-  console.log('UPDATE ISGUESS', updatedPlayers, answerClientId);
+  console.log('UPDATE IS GUESS', updatedPlayers, clientId);
   return updatedPlayers;
 };
 
