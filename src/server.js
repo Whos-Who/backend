@@ -27,7 +27,7 @@ app.use('/users', users);
 app.use('/decks', decks);
 app.use('/questions', questions);
 
-if (NODE_ENV == 'development') {
+if (NODE_ENV === 'development') {
   app.use('/reset', reset);
 }
 

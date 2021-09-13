@@ -162,7 +162,7 @@ const leaveRoom = async (roomCode, clientId) => {
 
   // If host is same as person who left, select new one
   if (
-    updatedGameState['host'] == clientId &&
+    updatedGameState['host'] === clientId &&
     updatedGameState.playerCount > 0
   ) {
     const newHost = pickNewHost(updatedGameState);
