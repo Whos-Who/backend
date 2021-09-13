@@ -1,5 +1,5 @@
 import { redisClient } from '../../database/redis';
-import { ROOM_PREFIX } from '../../const/room';
+import { ROOM_PREFIX } from '../../const/redis';
 import { LOBBY_PHASE } from '../../const/game';
 import { canJoin } from '../../utils/sockets/room';
 
