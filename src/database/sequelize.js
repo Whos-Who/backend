@@ -13,7 +13,7 @@ let sequelize;
 // Else it will be written to your local DB
 
 // DB configurations for updates, retrieval etc
-if (NODE_ENV == 'production') {
+if (NODE_ENV === 'production') {
   sequelize = new Sequelize(DATABASE_URL, {
     dialectOptions: { ssl: { require: true, rejectUnauthorized: false } }
   });

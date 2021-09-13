@@ -57,7 +57,7 @@ const intializeRoomListeners = (socket, io) => {
       socket.emit('room-leave');
       socket.leave(roomCode);
 
-      if (gameState.playerCount == 0) {
+      if (gameState.playerCount === 0) {
         const res = await removeRoom(gameState);
         // Debugging purpose
         if (res) console.log('Removed room');
