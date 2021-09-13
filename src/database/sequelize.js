@@ -1,11 +1,11 @@
 import dotenv from 'dotenv';
 
 import { Sequelize } from 'sequelize';
-import { DATABASE_URL } from '../const/const';
+import { DATABASE_URL, NODE_ENV } from '../const/const';
 
 dotenv.config();
 
-const logging = process.env.NODE_ENV === 'development' ? false : console.log;
+const logging = NODE_ENV === 'development' ? false : console.log;
 
 let sequelize;
 
@@ -13,7 +13,7 @@ let sequelize;
 // Else it will be written to your local DB
 
 // DB configurations for updates, retrieval etc
-if (process.env.NODE_ENV == 'production') {
+if (NODE_ENV == 'production') {
   sequelize = new Sequelize(DATABASE_URL, {
     dialectOptions: { ssl: { require: true, rejectUnauthorized: false } }
   });
