@@ -1,3 +1,4 @@
+import { SCOREBOARD_PHASE } from '../../const/game';
 import { QUESTIONS_PREFIX, GUESSING_ORDER } from '../../const/redis';
 import { redisClient } from '../../database/redis';
 
@@ -48,32 +49,67 @@ const removeGuessingOrder = async (roomCode) => {
   await redisClient.del(key);
 };
 
-const getScore = (players) => {
-  const multiplier = Object.values(players).reduce((total, player) => {
-    return total + player.currAnswer.isGuessed ? 0 : 1;
+const getRemainingAnswers = (players) => {
+  const numAnswerUnguessed = Object.values(players).reduce((total, player) => {
+    return total + (player.currAnswer.isGuessed ? 0 : 1);
   }, 0);
-  return multiplier;
+  return numAnswerUnguessed;
 };
 
 const updatePlayerScore = (clientId, players) => {
-  const score = getScore(players);
+  const score = getRemainingAnswers(players) - 1;
 
   const newPlayerState = {
     ...players[clientId],
     score: players[clientId]['score'] + score
   };
 
-  players = {
+  const newPlayers = {
+    ...players,
     [clientId]: newPlayerState
   };
 
-  return players;
+  return newPlayers;
 };
 
 const updateCorrectGuess = (clientId, players, answerClientId) => {
   const updatedPlayers = updatePlayerScore(clientId, players);
 
+  console.log('UPDATED SCORE', updatedPlayers, answerClientId);
+
   updatedPlayers[answerClientId]['currAnswer']['isGuessed'] = true;
+
+  console.log('UPDATE ISGUESS', updatedPlayers, answerClientId);
+  return updatedPlayers;
+};
+
+const prepareForNextQuestion = (gameState) => {
+  return {
+    ...gameState,
+    phase: SCOREBOARD_PHASE,
+    currQuestion: '',
+    currAnswerer: '',
+    selectedPlayerId: '',
+    selectedAnswerClientId: '',
+    players: clearPlayersAnswersState(gameState.players)
+  };
+};
+
+const clearPlayersAnswersState = (players) => {
+  let updatedPlayers = {};
+
+  Object.keys(players).forEach((clientId) => {
+    const state = players[clientId];
+
+    const newState = {
+      ...state,
+      currAnswer: {
+        value: '',
+        isGuessed: false
+      }
+    };
+    updatedPlayers[clientId] = newState;
+  });
 
   return updatedPlayers;
 };
@@ -85,5 +121,7 @@ export {
   getNextQuestion,
   removeQuestions,
   removeGuessingOrder,
-  updateCorrectGuess
+  updateCorrectGuess,
+  prepareForNextQuestion,
+  getRemainingAnswers
 };

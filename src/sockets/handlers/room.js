@@ -42,6 +42,9 @@ const cleanGameState = (roomCode, clientId) => {
     currQuestion: '',
     currAnswerer: '',
     playerCount: 0,
+    questionCount: 0,
+    selectedPlayerId: '',
+    selectedAnswerClientId: '',
     players: {}
   };
 };
@@ -77,7 +80,6 @@ const formatGameState = (gameState) => {
 
 const parseGameState = (gameState) => {
   const players = JSON.parse(gameState.players);
-  const playerCount = Number(gameState.playerCount);
 
   return {
     ...gameState,
@@ -91,7 +93,6 @@ const getGameState = async (roomCode) => {
   const key = `${ROOM_PREFIX}-${roomCode}`;
   const gameState = await redisClient.hgetall(key);
 
-  console.log('HEREsaklrhqiwuhre', gameState);
   return gameState;
 };
 
@@ -104,7 +105,6 @@ const updateGameStateInServer = async (gamestate) => {
 const removeRoom = async (gamestate) => {
   const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
 
-  console.log(key);
   await redisClient.del(key);
 };
 

@@ -13,7 +13,9 @@ import {
   getNextQuestion,
   removeGuessingOrder,
   removeQuestions,
-  updateCorrectGuess
+  updateCorrectGuess,
+  prepareForNextQuestion,
+  getRemainingAnswers
 } from '../handlers/game';
 
 import Question from '../../models/Question';
@@ -75,13 +77,12 @@ const intializeGameListeners = (socket, io) => {
         questionCount: numQuestions - 1
       };
 
-      console.log('UPDATED GAME STATE', updatedGameState);
+      console.log('START GAME', '- UPDATED GAME STATE', updatedGameState);
 
       const formattedGameState = formatGameState(updatedGameState);
       await updateGameStateInServer(formattedGameState);
 
       // Tell client game has begun and proceed to the question phase
-      console.log(roomCode);
       io.to(roomCode).emit('game-phase-question', updatedGameState);
     } catch (err) {
       socket.emit('error-game-start', err);
@@ -122,7 +123,7 @@ const intializeGameListeners = (socket, io) => {
         questionCount: parsedGameState.questionCount - 1
       };
 
-      console.log('UPDATED GAME STATE', updatedGameState);
+      console.log('NEXT QUESTION', '- UPDATED GAME STATE', updatedGameState);
       const formattedGameState = formatGameState(updatedGameState);
 
       await Promise.all([
@@ -162,7 +163,7 @@ const intializeGameListeners = (socket, io) => {
       const formattedGameState = formatGameState(cleanGameState);
       await updateGameStateInServer(formattedGameState);
 
-      console.log('CLEAN STATE', cleanGameState);
+      console.log('END GAME', '- UPDATED (CLEAN) GAME STATE', cleanGameState);
       // Tell client game has ended and bring players back to the lobby
       socket.emit('game-close', cleanGameState);
     } catch (err) {
@@ -174,12 +175,12 @@ const intializeGameListeners = (socket, io) => {
 
   socket.on('game-answer-submission', async (data) => {
     try {
-      const { roomCode, chosenClientId, answerClientId } = data;
+      const { roomCode, selectedPlayerId, selectedAnswerClientId } = data;
 
       const gameState = await getGameState(roomCode);
       const parsedGameState = parseGameState(gameState);
 
-      const result = chosenClientId == answerClientId;
+      const result = selectedPlayerId == selectedAnswerClientId;
 
       let updatedGameState;
 
@@ -187,38 +188,64 @@ const intializeGameListeners = (socket, io) => {
         updatedGameState = {
           ...parsedGameState,
           phase: TURN_REVEAL_PHASE,
+          selectedPlayerId,
+          selectedAnswerClientId,
           players: updateCorrectGuess(
-            clientId,
+            gameState.currAnswerer,
             parsedGameState.players,
-            answerClientId
+            selectedAnswerClientId
           )
         };
       } else {
         updatedGameState = {
           ...parsedGameState,
-          phase: TURN_REVEAL_PHASE
+          phase: TURN_REVEAL_PHASE,
+          selectedPlayerId,
+          selectedAnswerClientId
         };
       }
+
+      console.log('SUBMIT ANS', '- UPDATED GAME STATE', updatedGameState);
 
       const formattedGameState = formatGameState(updatedGameState);
       await updateGameStateInServer(formattedGameState);
 
-      io.to(roomCode).emit('game-turn-reveal', updatedGameState);
+      io.to(roomCode).emit('game-phase-turn-reveal', updatedGameState, result);
     } catch (err) {
-      socket.emit('error-room-create', err);
-      console.log('create room error occured', err);
+      socket.emit('error-answer-submission', err);
+      console.log('submit answer error occured', err);
       throw err;
     }
   });
 
-  socket.on('game-turn-guess', async (data) => {
+  socket.on('game-next-turn', async (data) => {
     try {
       const { roomCode } = data;
 
       const gameState = await getGameState(roomCode);
       const parsedGameState = parseGameState(gameState);
 
-      const nextGuesser = getNextGuesser(roomCode);
+      // If no more turns left, should bring to scoreboard
+      if (getRemainingAnswers(parsedGameState.players) <= 1) {
+        try {
+          const updatedGameState = prepareForNextQuestion(parsedGameState);
+
+          const formattedGameState = formatGameState(updatedGameState);
+          await updateGameStateInServer(formattedGameState);
+          // Prepare gameState for next question
+
+          console.log('SCOREBOARD', '- UPDATED  GAME STATE', updatedGameState);
+          io.to(roomCode).emit('game-phase-scoreboard', parsedGameState);
+        } catch (err) {
+          socket.emit('error-game-scoreboard', err);
+          console.log('game score board error occured', err);
+          throw err;
+        }
+
+        return;
+      }
+
+      const nextGuesser = await getNextGuesser(roomCode);
 
       const updatedGameState = {
         ...parsedGameState,
@@ -229,51 +256,76 @@ const intializeGameListeners = (socket, io) => {
       const formattedGameState = formatGameState(updatedGameState);
       await updateGameStateInServer(formattedGameState);
 
+      console.log('NEXT TURN', 'UPDATED  GAME STATE', updatedGameState);
+      io.to(roomCode).emit('game-phase-turn-guess', updatedGameState);
+
+      // Start async timer
+      setTimeout(async () => {
+        const gameState = await getGameState(roomCode);
+        const parsedGameState = parseGameState(gameState);
+
+        // If user did not answer in time, set this
+        if (parseGameState.gameState != TURN_REVEAL_PHASE) {
+          const unansweredGameState = {
+            ...parsedGameState,
+            phase: TURN_REVEAL_PHASE,
+            selectedPlayerId: '',
+            selectedAnswerClientId: ''
+          };
+
+          const formattedGameState = formatGameState(unansweredGameState);
+          await updateGameStateInServer(formattedGameState);
+          console.log('TIMES UP!');
+          io.to(roomCode).emit('game-phase-turn-reveal', unansweredGameState);
+        }
+      }, 10000);
+
       io.to(roomCode).emit('game-phase-turn-guess', updatedGameState);
     } catch (err) {
-      socket.emit('error-room-create', err);
-      console.log('create room error occured', err);
+      socket.emit('error-game-next-turn', err);
+      console.log('game next turn error occured', err);
       throw err;
     }
   });
 
-  socket.on('game-scores', async (data) => {
-    try {
-      const { roomCode } = data;
+  // socket.on('game-phase-guess-turn-timeout', async (data) => {
+  //   const { gameState } = data;
 
-      const gameState = await getGameState(roomCode);
-      const parsedGameState = parseGameState(gameState);
+  //   const formattedGameState = formatGameState(gameState);
+  //   await updateGameStateInServer(formattedGameState);
 
-      io.to(roomCode).emit('game-phase-scores', updatedGameState);
-    } catch (err) {
-      socket.emit('error-room-create', err);
-      console.log('create room error occured', err);
-      throw err;
-    }
-  });
+  //   io.to(roomCode).emit(
+  //     'game-phase-turn-reveal',
+  //     updatedGameState,
+  //     'Time out!'
+  //   );
+  // });
 
-  // TO -DO
-  // SCOREBOARD
-  // NEXT TURN
-  // SUBMIT ANS
-  // TURN REVEAL
-
-  // socket.on('room-create', async (data) => {
+  // socket.on('game-scores', async (data) => {
   //   try {
-  //     const { username } = data;
+  //     const { roomCode } = data;
 
-  //     const roomCode = socket.id;
-  //     const gameState = createRoom(roomCode, clientId, username);
+  //     const gameState = await getGameState(roomCode);
+  //     const parsedGameState = parseGameState(gameState);
 
-  //     // Tell client room is created and he can join room
-  //     socket.emit('room-join', gameState);
-  //     socket.join(gameState);
+  //     const updatedGameState = prepareForNextQuestion(parsedGameState);
+  //     console.log('UPDATED', updatedGameState);
+
+  //     const formattedGameState = formatGameState(updatedGameState);
+  //     await updateGameStateInServer(formattedGameState);
+  //     // Prepare gameState for next question
+
+  //     console.log('SCOREBOARD', '- UPDATED  GAME STATE', updatedGameState);
+  //     io.to(roomCode).emit('game-phase-scores', parsedGameState);
   //   } catch (err) {
   //     socket.emit('error-room-create', err);
   //     console.log('create room error occured', err);
   //     throw err;
   //   }
   // });
+
+  // TO -DO
+  // TIMER
 };
 
 export { intializeGameListeners };
