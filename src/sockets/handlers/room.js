@@ -12,9 +12,9 @@ const intializeGameState = (roomCode, clientId, username) => {
     currQuestion: '',
     currAnswerer: '',
     playerCount: 1,
-    questionCount: 0,
+    questionsLeft: 0,
     selectedPlayerId: '',
-    selectedAnswerClientId: '',
+    selectedAnswer: '',
     players: {
       [clientId]: intializePlayerState(username)
     }
@@ -48,7 +48,7 @@ const parseGameState = (gameState) => {
   return {
     ...gameState,
     playerCount: Number(gameState.playerCount),
-    questionCount: Number(gameState.questionCount),
+    questionsLeft: Number(gameState.questionsLeft),
     players: players
   };
 };
