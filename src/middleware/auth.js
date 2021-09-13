@@ -16,8 +16,7 @@ const verifyToken = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, TOKEN_KEY);
-    const userId = decoded.userId;
-    req.user = await User.findByPk(userId);
+    req.userId = decoded.userId;
   } catch (err) {
     throw createError(StatusCodes.UNAUTHORIZED, 'Invalid token!');
   }
