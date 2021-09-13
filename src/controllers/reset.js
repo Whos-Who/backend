@@ -8,7 +8,6 @@ import {
 
 async function destroyRoom(req, res, next) {
   try {
-    console.log(req.params.id);
     const roomKey = `${ROOM_PREFIX}-${req.params.id}`;
     const questionsKey = `${QUESTIONS_PREFIX}-${req.params.id}`;
     const guessingOrderKey = `${GUESSING_ORDER_PREFIX}-${req.params.id}`;
