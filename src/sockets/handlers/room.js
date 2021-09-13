@@ -69,7 +69,7 @@ const updateGameStateInServer = async (gamestate) => {
 const removeRoom = async (gamestate) => {
   const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
 
-  console.log(key);
+  console.log('REMOVE ROOM', key);
   await redisClient.del(key);
 };
 
@@ -83,7 +83,10 @@ const addUserToRoom = (clientId, username, gameState) => {
     }
   };
 
-  console.log(updatedGameState);
+  console.log(
+    `ADDED ${clientId} TO ROOM ${gameState.roomCode}`,
+    updatedGameState
+  );
   return updatedGameState;
 };
 
