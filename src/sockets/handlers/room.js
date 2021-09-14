@@ -162,7 +162,6 @@ const pickNewHost = (gameState) => {
 
 const createRoom = async (roomCode, clientId, username) => {
   const gameState = intializeGameState(roomCode, clientId, username);
-
   await formatAndUpdateGameState(gameState);
 
   console.log('room created by', clientId, gameState);
@@ -175,7 +174,7 @@ const joinRoom = async (roomCode, clientId, username) => {
 
   const gameState = await getAndParseGameState(roomCode);
 
-  if (!canJoin(parsedGameState, clientId))
+  if (!canJoin(gameState, clientId))
     throw new Error('Unable to join game! Game in progress!');
 
   const updatedGameState = addUserToRoom(
@@ -187,7 +186,7 @@ const joinRoom = async (roomCode, clientId, username) => {
     gameState
   );
 
-  await formatAndUpdateGameState(gameState);
+  await formatAndUpdateGameState(updatedGameState);
 
   console.log(clientId, 'has joined, new game state', updatedGameState);
 
@@ -212,7 +211,7 @@ const leaveRoom = async (roomCode, clientId) => {
     console.log('NEW HOST', newHost);
   }
 
-  await formatAndUpdateGameState(gameState);
+  await formatAndUpdateGameState(updatedGameState);
 
   console.log(clientId, 'has left, new game state', updatedGameState);
 
