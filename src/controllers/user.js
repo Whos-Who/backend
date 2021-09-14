@@ -20,7 +20,7 @@ async function login(req, res, next) {
     });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw createError(StatusCodes.BAD_REQUEST, 'Invalid credentials!');
+      throw createError(StatusCodes.UNAUTHORIZED, 'Invalid credentials!');
     }
 
     const payload = {

@@ -9,7 +9,7 @@ const verifyToken = async (req, res, next) => {
 
   if (!token) {
     throw createError(
-      StatusCodes.FORBIDDEN,
+      StatusCodes.UNAUTHORIZED,
       'Token is required for authentication!'
     );
   }
