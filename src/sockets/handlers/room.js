@@ -2,6 +2,7 @@ import { redisClient } from '../../database/redis';
 import { ROOM_PREFIX } from '../../const/redis';
 import { LOBBY_PHASE } from '../../const/game';
 import { canJoin } from '../../utils/sockets/room';
+import { Mutex } from 'redis-semaphore';
 
 // Create new game state
 const intializeGameState = (roomCode, clientId, username) => {
@@ -79,6 +80,7 @@ const formatGameState = (gameState) => {
 };
 
 const parseGameState = (gameState) => {
+  console.log(gameState);
   const players = JSON.parse(gameState.players);
 
   return {
@@ -172,21 +174,32 @@ const createRoom = async (roomCode, clientId, username) => {
 const joinRoom = async (roomCode, clientId, username) => {
   if (!roomCode) throw new Error('Empty room code!');
 
-  const gameState = await getAndParseGameState(roomCode);
+  const key = `${ROOM_PREFIX}-${roomCode}`;
+  // Possible concurrency issue here when multiple people join at once
+  const mutex = new Mutex(redisClient, key);
+  await mutex.acquire();
+  let gameState;
+  let updatedGameState;
 
-  if (!canJoin(gameState, clientId))
-    throw new Error('Unable to join game! Game in progress!');
+  try {
+    gameState = await getAndParseGameState(roomCode);
 
-  const updatedGameState = addUserToRoom(
-    // For testing purposes
-    // 'Noobmaster69',
-    // '3216 god',
-    clientId,
-    username,
-    gameState
-  );
+    if (!canJoin(gameState, clientId))
+      throw new Error('Unable to join game! Game in progress!');
 
-  await formatAndUpdateGameState(updatedGameState);
+    updatedGameState = addUserToRoom(
+      // For testing purposes
+      // 'Noobmaster69',
+      // '3216 god',
+      clientId,
+      username,
+      gameState
+    );
+
+    await formatAndUpdateGameState(updatedGameState);
+  } finally {
+    await mutex.release();
+  }
 
   console.log(clientId, 'has joined, new game state', updatedGameState);
 
@@ -196,22 +209,33 @@ const joinRoom = async (roomCode, clientId, username) => {
 const leaveRoom = async (roomCode, clientId) => {
   if (!roomCode) throw new Error('Empty room code!');
 
-  const gameState = await getAndParseGameState(roomCode);
-  const updatedGameState = removeUserFromRoom(clientId, gameState);
+  const key = `${ROOM_PREFIX}-${roomCode}`;
+  // Possible concurrency issue here when multiple people join at once
+  const mutex = new Mutex(redisClient, key);
+  await mutex.acquire();
 
+  let gameState;
+  let updatedGameState;
   let newHost;
 
-  // If host is same as person who left, select new one
-  if (
-    updatedGameState['host'] === clientId &&
-    updatedGameState.playerCount > 0
-  ) {
-    const newHost = pickNewHost(updatedGameState);
-    updatedGameState['host'] = newHost;
-    console.log('NEW HOST', newHost);
-  }
+  try {
+    gameState = await getAndParseGameState(roomCode);
+    updatedGameState = removeUserFromRoom(clientId, gameState);
 
-  await formatAndUpdateGameState(updatedGameState);
+    // If host is same as person who left, select new one
+    if (
+      updatedGameState['host'] === clientId &&
+      updatedGameState.playerCount > 0
+    ) {
+      newHost = pickNewHost(updatedGameState);
+      updatedGameState['host'] = newHost;
+      console.log('NEW HOST', newHost);
+    }
+
+    await formatAndUpdateGameState(updatedGameState);
+  } finally {
+    await mutex.release();
+  }
 
   console.log(clientId, 'has left, new game state', updatedGameState);
 

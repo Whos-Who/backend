@@ -1,5 +1,9 @@
 import { SCOREBOARD_PHASE } from '../../const/game';
-import { QUESTIONS_PREFIX, GUESSING_ORDER_PREFIX } from '../../const/redis';
+import {
+  QUESTIONS_PREFIX,
+  GUESSING_ORDER_PREFIX,
+  ROOM_PREFIX
+} from '../../const/redis';
 import {
   QUESTION_PHASE,
   TURN_GUESS_PHASE,
@@ -7,14 +11,12 @@ import {
 } from '../../const/game';
 
 import { redisClient } from '../../database/redis';
+import { Mutex } from 'redis-semaphore';
 import { shuffle } from '../../utils/utils';
-
 import {
   getAndParseGameState,
   // parseGameState,
-  formatGameState,
   cleanUpGameState,
-  updateGameStateInServer,
   formatAndUpdateGameState
 } from '../handlers/room';
 
@@ -301,7 +303,7 @@ const endTurnGuessingPhase = async (roomCode, gameState, socket, io) => {
     // Prepare gameState for next question
 
     console.log('SCOREBOARD', '- UPDATED  GAME STATE', updatedGameState);
-    io.to(roomCode).emit('game-phase-scoreboard', gameState);
+    io.to(roomCode).emit('game-phase-scoreboard', updatedState);
 
     return updatedGameState;
   } catch (err) {
@@ -335,18 +337,28 @@ const switchToTurnGuessPhase = async (roomCode, socket, io) => {
 };
 
 const addPlayerAnswer = async (roomCode, playerId, answer) => {
-  const gameState = await getAndParseGameState(roomCode);
-
-  const updatedGameState = {
-    ...gameState
-  };
-
-  updatedGameState['players'][playerId]['currAnswer']['value'] = answer;
+  const key = `${ROOM_PREFIX}-${roomCode}`;
 
   // Possible race condition here when multiple concurrent submissions?
-  // Maybe can use mutex, but see performance first
+  //Need to test if this works
+  const mutex = new Mutex(redisClient, key);
+  await mutex.acquire();
+  let gameState;
+  let updatedGameState;
 
-  await formatAndUpdateGameState(updatedGameState);
+  try {
+    gameState = await getAndParseGameState(roomCode);
+
+    updatedGameState = {
+      ...gameState
+    };
+
+    updatedGameState['players'][playerId]['currAnswer']['value'] = answer;
+
+    await formatAndUpdateGameState(updatedGameState);
+  } finally {
+    await mutex.release();
+  }
 
   console.log('SUBMIT ANSWER', '- UPDATED GAME STATE', gameState);
   console.log(

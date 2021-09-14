@@ -69,7 +69,10 @@ const intializeGameListeners = (socket, io) => {
 
       const gameState = await addPlayerAnswer(roomCode, clientId, answer);
 
-      io.to(roomCode).emit('game-player-ready', gameState);
+      io.to(roomCode).emit('game-player-ready', {
+        gameState,
+        readyClientId: clientId
+      });
     } catch (err) {
       socket.emit('error-game-player-answer-submission', err);
       console.log('game player answer submission error occured', err);
