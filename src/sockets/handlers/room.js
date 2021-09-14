@@ -96,10 +96,25 @@ const getGameState = async (roomCode) => {
   return gameState;
 };
 
+const getAndParseGameState = async (roomCode) => {
+  const gameState = await getGameState(roomCode);
+
+  if (!gameState) throw new Error(`Game with ${roomCode} }does not exist!`);
+
+  const parsedGameState = parseGameState(gameState);
+
+  return parsedGameState;
+};
+
 const updateGameStateInServer = async (gamestate) => {
   const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
 
   await redisClient.hmset(key, gamestate);
+};
+
+const formatAndUpdateGameState = async (gameState) => {
+  const formattedGameState = formatGameState(gameState);
+  await updateGameStateInServer(formattedGameState);
 };
 
 const removeRoom = async (gamestate) => {
@@ -148,8 +163,7 @@ const pickNewHost = (gameState) => {
 const createRoom = async (roomCode, clientId, username) => {
   const gameState = intializeGameState(roomCode, clientId, username);
 
-  const formattedGameState = formatGameState(gameState);
-  await updateGameStateInServer(formattedGameState);
+  await formatAndUpdateGameState(gameState);
 
   console.log('room created by', clientId, gameState);
 
@@ -159,11 +173,7 @@ const createRoom = async (roomCode, clientId, username) => {
 const joinRoom = async (roomCode, clientId, username) => {
   if (!roomCode) throw new Error('Empty room code!');
 
-  const gameState = await getGameState(roomCode);
-
-  if (!gameState) throw new Error('Game does not exist!');
-
-  const parsedGameState = parseGameState(gameState);
+  const gameState = await getAndParseGameState(roomCode);
 
   if (!canJoin(parsedGameState, clientId))
     throw new Error('Unable to join game! Game in progress!');
@@ -174,11 +184,10 @@ const joinRoom = async (roomCode, clientId, username) => {
     // '3216 god',
     clientId,
     username,
-    parsedGameState
+    gameState
   );
 
-  const formattedGameState = formatGameState(updatedGameState);
-  await updateGameStateInServer(formattedGameState);
+  await formatAndUpdateGameState(gameState);
 
   console.log(clientId, 'has joined, new game state', updatedGameState);
 
@@ -188,11 +197,8 @@ const joinRoom = async (roomCode, clientId, username) => {
 const leaveRoom = async (roomCode, clientId) => {
   if (!roomCode) throw new Error('Empty room code!');
 
-  const gameState = await getGameState(roomCode);
-
-  if (!gameState) throw new Error('Game does not exist!');
-  const parsedGameState = parseGameState(gameState);
-  const updatedGameState = removeUserFromRoom(clientId, parsedGameState);
+  const gameState = await getAndParseGameState(roomCode);
+  const updatedGameState = removeUserFromRoom(clientId, gameState);
 
   let newHost;
 
@@ -206,8 +212,7 @@ const leaveRoom = async (roomCode, clientId) => {
     console.log('NEW HOST', newHost);
   }
 
-  const formattedGameState = formatGameState(updatedGameState);
-  await updateGameStateInServer(formattedGameState);
+  await formatAndUpdateGameState(gameState);
 
   console.log(clientId, 'has left, new game state', updatedGameState);
 
