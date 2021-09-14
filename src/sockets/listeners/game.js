@@ -1,31 +1,16 @@
 import {
   getAndParseGameState,
-  // parseGameState,
-  formatGameState,
-  cleanUpGameState,
-  updateGameStateInServer,
   formatAndUpdateGameState
 } from '../handlers/room';
-import { shuffle, extractQuestionsAndShuffle } from '../../utils/utils';
 import {
-  addGuessingOrder,
-  addQuestions,
-  getNextGuesser,
-  getNextQuestion,
-  removeGuessingOrder,
-  removeQuestions,
-  updateCorrectGuess,
-  prepareForNextQuestion,
-  getRemainingAnswers,
-  checkCorrectAnswer,
+  addPlayerAnswer,
   startGame,
-  switchToQuestionsPhase
+  switchToQuestionsPhase,
+  switchToTurnGuessPhase,
+  endGame,
+  switchToTurnRevealPhase
 } from '../handlers/game';
-import {
-  QUESTION_PHASE,
-  TURN_GUESS_PHASE,
-  TURN_REVEAL_PHASE
-} from '../../const/game';
+import { TURN_GUESS_PHASE, TURN_REVEAL_PHASE } from '../../const/game';
 
 const intializeGameListeners = (socket, io) => {
   // Retrieves from socket query parameters
@@ -53,7 +38,7 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode } = data;
 
-      const gameState = switchToQuestionsPhase(roomCode, io);
+      const gameState = switchToQuestionsPhase(roomCode);
 
       // Tell client to proceed to open question and let user answer
       io.to(roomCode).emit('game-phase-question', gameState);
@@ -68,26 +53,9 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode } = data;
 
-      // Remove exisiting question and getting order states in Redis
-      const gameState = await Promise.all([
-        getGameState(roomCode),
-        removeQuestions(roomCode),
-        removeGuessingOrder(roomCode)
-      ]).then((res) => {
-        return res[0];
-      });
-
-      const parsedGameState = parseGameState(gameState);
-
-      // Send clean game state, since they are brought back to lobby where they can play again
-      const cleanGameState = cleanUpGameState(parsedGameState);
-
-      const formattedGameState = formatGameState(cleanGameState);
-      await updateGameStateInServer(formattedGameState);
-
-      console.log('END GAME', '- UPDATED (CLEAN) GAME STATE', cleanGameState);
+      const gameState = endGame(roomCode);
       // Tell client game has ended and bring players back to the lobby
-      socket.emit('game-close', cleanGameState);
+      io.to(roomCode).emit('game-close', gameState);
     } catch (err) {
       socket.emit('error-game-end', err);
       console.log('game end error occured', err);
@@ -95,50 +63,36 @@ const intializeGameListeners = (socket, io) => {
     }
   });
 
-  socket.on('game-answer-submission', async (data) => {
+  socket.on('game-player-answer-submission', async (data) => {
+    try {
+      const { roomCode, answer } = data;
+
+      const gameState = await addPlayerAnswer(roomCode, clientId, answer);
+
+      io.to(roomCode).emit('game-player-ready', gameState);
+    } catch (err) {
+      socket.emit('error-game-player-answer-submission', err);
+      console.log('game player answer submission error occured', err);
+      throw err;
+    }
+  });
+
+  socket.on('game-player-match-submission', async (data) => {
     try {
       const { roomCode, selectedPlayerId, selectedAnswer } = data;
 
-      const gameState = await getGameState(roomCode);
-      const parsedGameState = parseGameState(gameState);
-
-      const result = checkCorrectAnswer(
-        gameState,
+      const gameState = await switchToTurnRevealPhase(
+        roomCode,
         selectedPlayerId,
         selectedAnswer
       );
 
-      let updatedGameState;
+      console.log('SUBMIT MATCH', '- UPDATED GAME STATE', gameState);
 
-      if (result) {
-        updatedGameState = {
-          ...parsedGameState,
-          phase: TURN_REVEAL_PHASE,
-          selectedPlayerId,
-          selectedAnswer,
-          players: updateCorrectGuess(
-            gameState.currAnswerer,
-            parsedGameState.players
-          )
-        };
-      } else {
-        updatedGameState = {
-          ...parsedGameState,
-          phase: TURN_REVEAL_PHASE,
-          selectedPlayerId,
-          selectedAnswer
-        };
-      }
-
-      console.log('SUBMIT ANS', '- UPDATED GAME STATE', updatedGameState);
-
-      const formattedGameState = formatGameState(updatedGameState);
-      await updateGameStateInServer(formattedGameState);
-
-      io.to(roomCode).emit('game-phase-turn-reveal', updatedGameState, result);
+      io.to(roomCode).emit('game-phase-turn-reveal', gameState);
     } catch (err) {
-      socket.emit('error-answer-submission', err);
-      console.log('submit answer error occured', err);
+      socket.emit('error-game-player-match-submission', err);
+      console.log('game player match submission error occured', err);
       throw err;
     }
   });
@@ -147,65 +101,28 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode } = data;
 
-      const gameState = await getGameState(roomCode);
-      const parsedGameState = parseGameState(gameState);
+      const gameState = await switchToTurnGuessPhase(roomCode, socket, io);
 
-      // If no more turns left, should bring to scoreboard
-      if (getRemainingAnswers(parsedGameState.players) <= 1) {
-        try {
-          const updatedGameState = prepareForNextQuestion(parsedGameState);
-
-          const formattedGameState = formatGameState(updatedGameState);
-          await updateGameStateInServer(formattedGameState);
-          // Prepare gameState for next question
-
-          console.log('SCOREBOARD', '- UPDATED  GAME STATE', updatedGameState);
-          io.to(roomCode).emit('game-phase-scoreboard', parsedGameState);
-        } catch (err) {
-          socket.emit('error-game-scoreboard', err);
-          console.log('game score board error occured', err);
-          throw err;
-        }
-
-        return;
-      }
-
-      const nextGuesser = await getNextGuesser(roomCode);
-
-      const updatedGameState = {
-        ...parsedGameState,
-        phase: TURN_GUESS_PHASE,
-        currAnswerer: nextGuesser
-      };
-
-      const formattedGameState = formatGameState(updatedGameState);
-      await updateGameStateInServer(formattedGameState);
-
-      console.log('NEXT TURN', 'UPDATED  GAME STATE', updatedGameState);
-      io.to(roomCode).emit('game-phase-turn-guess', updatedGameState);
+      console.log('NEXT TURN', 'UPDATED  GAME STATE', gameState);
+      io.to(roomCode).emit('game-phase-turn-guess', gameState);
 
       // Start async timer
       setTimeout(async () => {
-        const gameState = await getGameState(roomCode);
-        const parsedGameState = parseGameState(gameState);
-
+        const gameState = await getAndParseGameState(roomCode);
         // If user did not answer in time, set this
-        if (parseGameState.gameState != TURN_REVEAL_PHASE) {
+        if (gameState.gameState != TURN_REVEAL_PHASE) {
           const unansweredGameState = {
-            ...parsedGameState,
+            ...gameState,
             phase: TURN_REVEAL_PHASE,
             selectedPlayerId: '',
             selectedAnswer: ''
           };
 
-          const formattedGameState = formatGameState(unansweredGameState);
-          await updateGameStateInServer(formattedGameState);
+          await formatAndUpdateGameState(unansweredGameState);
           console.log('TIMES UP!');
           io.to(roomCode).emit('game-phase-turn-reveal', unansweredGameState);
         }
       }, 10000);
-
-      io.to(roomCode).emit('game-phase-turn-guess', updatedGameState);
     } catch (err) {
       socket.emit('error-game-next-turn', err);
       console.log('game next turn error occured', err);

@@ -7,7 +7,7 @@ import {
 } from '../../const/game';
 
 import { redisClient } from '../../database/redis';
-import { shuffle, extractQuestionsAndShuffle } from '../../utils/utils';
+import { shuffle } from '../../utils/utils';
 
 import {
   getAndParseGameState,
@@ -77,15 +77,16 @@ const getRemainingAnswers = (players) => {
 const updatePlayerScore = (clientId, players) => {
   const score = getRemainingAnswers(players) - 1;
 
+  const newPlayers = {
+    ...players
+  };
+
   const newPlayerState = {
     ...players[clientId],
     score: players[clientId]['score'] + score
   };
 
-  const newPlayers = {
-    ...players,
-    [clientId]: newPlayerState
-  };
+  newPlayers[clientId] = newPlayerState;
 
   return newPlayers;
 };
@@ -93,7 +94,7 @@ const updatePlayerScore = (clientId, players) => {
 const updateCorrectGuess = (clientId, players) => {
   const updatedPlayers = updatePlayerScore(clientId, players);
 
-  console.log('UPDATED SCORE', updatedPlayers, answerClientId);
+  console.log('UPDATED SCORE', updatedPlayers);
 
   updatedPlayers[clientId]['currAnswer']['isGuessed'] = true;
 
@@ -101,7 +102,7 @@ const updateCorrectGuess = (clientId, players) => {
   return updatedPlayers;
 };
 
-const prepareForNextQuestion = (gameState) => {
+const switchToScoreboardPhase = (gameState) => {
   return {
     ...gameState,
     phase: SCOREBOARD_PHASE,
@@ -132,14 +133,12 @@ const clearPlayersAnswersState = (players) => {
   return updatedPlayers;
 };
 
-const checkCorrectAnswer = (gameState, clientId, answer) => {
-  return gameState[clientId]['currAnswer']['value'] === answer;
+const checkResult = (gameState, clientId, answer) => {
+  return gameState['players'][clientId]['currAnswer']['value'] === answer;
 };
 
-const startGame = async (roomCode, deckId) => {
-  if (!roomCode || !deckId) throw new Error('Missing fields for game start');
-
-  let questions = await Question.findAll({
+const getQuestions = async (deckId) => {
+  const questionsJson = await Question.findAll({
     where: {
       deckId
     },
@@ -147,7 +146,32 @@ const startGame = async (roomCode, deckId) => {
     raw: true
   });
 
-  questions = extractQuestionsAndShuffle(questions);
+  let questions = questionsJson.map((element) => element['question']);
+  questions = shuffle(questions);
+
+  return questions;
+};
+
+const getPlayers = (gameState) => {
+  let players = Object.keys(gameState['players']);
+  players = shuffle(players);
+
+  return players;
+};
+
+const updateStateToQuestionPhase = (gameState, nextQuestion, numQuestions) => {
+  return {
+    ...gameState,
+    phase: QUESTION_PHASE,
+    currQuestion: nextQuestion,
+    questionsLeft: numQuestions - 1
+  };
+};
+
+const startGame = async (roomCode, deckId) => {
+  if (!roomCode || !deckId) throw new Error('Missing fields for game start');
+
+  const questions = await getQuestions(deckId);
   const numQuestions = questions.length;
 
   const gameState = await Promise.all([
@@ -155,20 +179,18 @@ const startGame = async (roomCode, deckId) => {
     addQuestions(roomCode, questions)
   ]).then((res) => res[0]);
 
-  const players = Object.keys(gameState['players']);
-  shuffle(players);
+  const players = getPlayers(gameState);
 
   const nextQuestion = await Promise.all([
     getNextQuestion(roomCode),
     addGuessingOrder(roomCode, players)
   ]).then((res) => res[0]);
 
-  const updatedGameState = {
-    ...gameState,
-    phase: QUESTION_PHASE,
-    currQuestion: nextQuestion,
-    questionsLeft: numQuestions - 1
-  };
+  const updatedGameState = updateStateToQuestionPhase(
+    gameState,
+    nextQuestion,
+    numQuestions
+  );
 
   console.log('START GAME', '- UPDATED GAME STATE', updatedGameState);
 
@@ -177,7 +199,7 @@ const startGame = async (roomCode, deckId) => {
   return updatedGameState;
 };
 
-const switchToQuestionsPhase = async (roomCode, io) => {
+const switchToQuestionsPhase = async (roomCode) => {
   const [nextQuestion, gameState] = await Promise.all([
     getNextQuestion(roomCode),
     getAndParseGameState(roomCode)
@@ -185,29 +207,156 @@ const switchToQuestionsPhase = async (roomCode, io) => {
     return res;
   });
 
-  // No more questions, end game and emit final state (with the scores)
-  if (!gameState.questionsLeft) {
-    console.log('No questions left!');
-    io.to(roomCode).emit('game-end', gameState);
-    return;
-  }
+  const players = getPlayers(gameState);
 
-  const players = Object.keys(gameState['players']);
-  shuffle(players);
-
-  const updatedGameState = {
-    ...gameState,
-    phase: QUESTION_PHASE,
-    currQuestion: nextQuestion,
-    questionsLeft: gameState.questionsLeft - 1
-  };
-
-  console.log('NEXT QUESTION', '- UPDATED GAME STATE', updatedGameState);
+  const updatedGameState = updateStateToQuestionPhase(
+    gameState,
+    nextQuestion,
+    gameState.questionsLeft
+  );
 
   await Promise.all([
     formatAndUpdateGameState(updatedGameState),
     addGuessingOrder(roomCode, players)
   ]);
+
+  console.log('NEXT QUESTION', '- UPDATED GAME STATE', updatedGameState);
+
+  return updatedGameState;
+};
+
+const endGame = async (roomCode) => {
+  // Remove exisiting question and getting order states in Redis
+  const gameState = await Promise.all([
+    getAndParseGameState(roomCode),
+    removeQuestions(roomCode),
+    removeGuessingOrder(roomCode)
+  ]).then((res) => {
+    return res[0];
+  });
+
+  // Send clean game state, since they are brought back to lobby where they can play again
+  const cleanGameState = cleanUpGameState(gameState);
+
+  await formatAndUpdateGameState(cleanGameState);
+
+  console.log('END GAME', '- UPDATED (CLEAN) GAME STATE', cleanGameState);
+
+  return cleanGameState;
+};
+
+const updateStateWithCorrectGuess = (
+  gameState,
+  selectedPlayerId,
+  selectedAnswer
+) => {
+  return {
+    ...gameState,
+    phase: TURN_REVEAL_PHASE,
+    selectedPlayerId,
+    selectedAnswer,
+    players: updateCorrectGuess(gameState.currAnswerer, gameState.players)
+  };
+};
+
+const updateStateWithWrongGuess = (
+  gameState,
+  selectedPlayerId,
+  selectedAnswer
+) => {
+  return {
+    ...gameState,
+    phase: TURN_REVEAL_PHASE,
+    selectedPlayerId,
+    selectedAnswer
+  };
+};
+
+const switchToTurnRevealPhase = async (
+  roomCode,
+  selectedPlayerId,
+  selectedAnswer
+) => {
+  const gameState = await getAndParseGameState(roomCode);
+
+  const result = checkResult(gameState, selectedPlayerId, selectedAnswer);
+
+  console.log('CHECK RESULT', result);
+
+  const updatedGameState = result
+    ? updateStateWithCorrectGuess(gameState, selectedPlayerId, selectedAnswer)
+    : updateStateWithWrongGuess(gameState, selectedPlayerId, selectedAnswer);
+
+  await formatAndUpdateGameState(updatedGameState);
+
+  console.log('MATCH SUBMISSION', '- UPDATED  GAME STATE', updatedGameState);
+  return updatedGameState;
+};
+
+const endTurnGuessingPhase = async (roomCode, gameState, socket, io) => {
+  try {
+    const updatedGameState = switchToScoreboardPhase(gameState);
+
+    await formatAndUpdateGameState(updatedGameState);
+    // Prepare gameState for next question
+
+    console.log('SCOREBOARD', '- UPDATED  GAME STATE', updatedGameState);
+    io.to(roomCode).emit('game-phase-scoreboard', gameState);
+
+    return updatedGameState;
+  } catch (err) {
+    socket.emit('error-game-scoreboard', err);
+    console.log('game score board error occured', err);
+    throw err;
+  }
+};
+
+const switchToTurnGuessPhase = async (roomCode, socket, io) => {
+  const gameState = await getAndParseGameState(roomCode);
+
+  // If no more turns left, should bring to scoreboard
+  if (getRemainingAnswers(gameState.players) <= 1)
+    return await endTurnGuessingPhase(roomCode, gameState, socket, io);
+
+  const nextGuesser = await getNextGuesser(roomCode);
+
+  // Stay on turnGuessPhase, with nextGuesser
+  const updatedGameState = {
+    ...gameState,
+    phase: TURN_GUESS_PHASE,
+    currAnswerer: nextGuesser
+  };
+
+  await formatAndUpdateGameState(updatedGameState);
+
+  console.log('NEXT TURN', 'UPDATED  GAME STATE', updatedGameState);
+
+  return updatedGameState;
+};
+
+const addPlayerAnswer = async (roomCode, playerId, answer) => {
+  const gameState = await getAndParseGameState(roomCode);
+
+  console.log(gameState['players'][playerId]);
+
+  const updatedGameState = {
+    ...gameState
+  };
+
+  updatedGameState['players'][playerId]['currAnswer']['value'] = answer;
+
+  await formatAndUpdateGameState(gameState);
+
+  console.log('SUBMIT ANSWER', '- UPDATED GAME STATE', gameState);
+  console.log(
+    'NEW ANSWER',
+    updatedGameState['players'][playerId]['currAnswer']
+  );
+  console.log('UPDATED ANSWERS');
+  Object.keys(updatedGameState['players']).forEach((clientId) => {
+    const ans = updatedGameState['players'][clientId]['currAnswer']['value'];
+    console.log('ClientID:', clientId, 'ANSWER', ans);
+  });
 
   return updatedGameState;
 };
@@ -220,9 +369,13 @@ export {
   removeQuestions,
   removeGuessingOrder,
   updateCorrectGuess,
-  prepareForNextQuestion,
+  switchToScoreboardPhase,
   getRemainingAnswers,
-  checkCorrectAnswer,
+  checkResult,
   startGame,
-  switchToQuestionsPhase
+  endGame,
+  switchToQuestionsPhase,
+  switchToTurnRevealPhase,
+  switchToTurnGuessPhase,
+  addPlayerAnswer
 };
