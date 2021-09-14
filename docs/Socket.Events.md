@@ -6,7 +6,7 @@
 
 # Table of Content
 
-- [How to use](#How to use)
+- [How to use](#how-to-use)
 - [Room](#room)
   - [room-create](#room-create)
   - [room-join](#room-join)
@@ -21,7 +21,9 @@ To use the web sockets, on the client side, you first have to establish a connec
 To trigger and listen to certain events on the client side, you can use `socket.emit(msg, data)` and `socket.on(msg, data)`.
 The full documentation can be found [here](https://socket.io/docs/v4/client-api/)
 
-I would also recommend that you set up the Backend repository locally to test the events, as you can clear the Redis storage with the `FLUSHALL` command using `redis-cli`, if there happens to be bugs / missing data sent while implementing features.
+I would also recommend that you set up the Backend repository locally to test the events, as you can clear the Redis storage by hitting the following endpoints:
+- `POST /reset` to clear all the game states in your local Redis
+- `DELETE /reset/:roomid` to clear all game state related to `roomid`
 
 ## Room
 
