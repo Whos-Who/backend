@@ -16,4 +16,11 @@ const shuffle = (arr) => {
   return arr;
 };
 
-export { shuffle };
+const extractQuestionsAndShuffle = (questionsJson) => {
+  let questions = questionsJson.map((element) => element['question']);
+  questions = shuffle(questions);
+
+  return questions;
+};
+
+export { shuffle, extractQuestionsAndShuffle };

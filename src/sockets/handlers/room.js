@@ -232,5 +232,7 @@ export {
   createRoom,
   joinRoom,
   leaveRoom,
-  removeRoom
+  removeRoom,
+  getAndParseGameState,
+  formatAndUpdateGameState
 };

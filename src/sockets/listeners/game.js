@@ -1,11 +1,12 @@
 import {
-  getGameState,
-  parseGameState,
+  getAndParseGameState,
+  // parseGameState,
   formatGameState,
   cleanUpGameState,
-  updateGameStateInServer
+  updateGameStateInServer,
+  formatAndUpdateGameState
 } from '../handlers/room';
-import { shuffle } from '../../utils/utils';
+import { shuffle, extractQuestionsAndShuffle } from '../../utils/utils';
 import {
   addGuessingOrder,
   addQuestions,
@@ -16,10 +17,10 @@ import {
   updateCorrectGuess,
   prepareForNextQuestion,
   getRemainingAnswers,
-  checkCorrectAnswer
+  checkCorrectAnswer,
+  startGame,
+  switchToQuestionsPhase
 } from '../handlers/game';
-
-import Question from '../../models/Question';
 import {
   QUESTION_PHASE,
   TURN_GUESS_PHASE,
@@ -36,58 +37,10 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode, deckId } = data;
 
-      if (!roomCode || !deckId)
-        throw new Error('Missing fields for game start');
-
-      let questions = await Question.findAll({
-        where: {
-          deckId
-        },
-        attributes: ['question'],
-        raw: true
-      });
-
-      questions = questions.map((element) => element['question']);
-      const numQuestions = questions.length;
-      shuffle(questions);
-
-      const gameState = await Promise.all([
-        addQuestions(roomCode, questions),
-        getGameState(roomCode)
-      ]).then((res) => res[1]);
-
-      console.log(gameState);
-
-      // await addQuestions(roomCode, questions);
-
-      // const gameState = await getGameState(roomCode);
-      const parsedGameState = parseGameState(gameState);
-      const players = Object.keys(parsedGameState['players']);
-      shuffle(players);
-
-      const nextQuestion = await Promise.all([
-        addGuessingOrder(roomCode, players),
-        getNextQuestion(roomCode)
-      ]).then((res) => res[1]);
-
-      // await addGuessingOrder(roomCode, players);
-
-      // const nextQuestion = await getNextQuestion(roomCode);
-
-      const updatedGameState = {
-        ...parsedGameState,
-        phase: QUESTION_PHASE,
-        currQuestion: nextQuestion,
-        questionsLeft: numQuestions - 1
-      };
-
-      console.log('START GAME', '- UPDATED GAME STATE', updatedGameState);
-
-      const formattedGameState = formatGameState(updatedGameState);
-      await updateGameStateInServer(formattedGameState);
+      const gameState = startGame(roomCode, deckId);
 
       // Tell client game has begun and proceed to the question phase
-      io.to(roomCode).emit('game-phase-question', updatedGameState);
+      io.to(roomCode).emit('game-phase-question', gameState);
     } catch (err) {
       socket.emit('error-game-start', err);
       console.log('game start error occured', err);
@@ -100,45 +53,10 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode } = data;
 
-      const [nextQuestion, gameState] = await Promise.all([
-        getNextQuestion(roomCode),
-        getGameState(roomCode)
-      ]).then((res) => {
-        return res;
-      });
-      // const gameState = await getGameState(roomCode);
-      const parsedGameState = parseGameState(gameState);
-
-      // No more questions, end game and emit final state (with the scores)
-      // Might need to track question count if FE won't show that Next Question anymore
-      if (!parsedGameState.questionsLeft) {
-        console.log('No questions left!');
-        io.to(roomCode).emit('game-end', parsedGameState);
-        return;
-      }
-
-      const players = Object.keys(parsedGameState['players']);
-      shuffle(players);
-
-      const updatedGameState = {
-        ...parsedGameState,
-        phase: QUESTION_PHASE,
-        currQuestion: nextQuestion,
-        questionsLeft: parsedGameState.questionsLeft - 1
-      };
-
-      console.log('NEXT QUESTION', '- UPDATED GAME STATE', updatedGameState);
-      const formattedGameState = formatGameState(updatedGameState);
-
-      await Promise.all([
-        updateGameStateInServer(formattedGameState),
-        addGuessingOrder(roomCode, players)
-      ]);
-      // await updateGameStateInServer(formattedGameState);
-      // await addGuessingOrder(roomCode, players);
+      const gameState = switchToQuestionsPhase(roomCode, io);
 
       // Tell client to proceed to open question and let user answer
-      io.to(roomCode).emit('game-phase-question', updatedGameState);
+      io.to(roomCode).emit('game-phase-question', gameState);
     } catch (err) {
       socket.emit('error-game-next-question', err);
       console.log('game next question error occured', err);

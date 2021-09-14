@@ -1,6 +1,24 @@
 import { SCOREBOARD_PHASE } from '../../const/game';
 import { QUESTIONS_PREFIX, GUESSING_ORDER_PREFIX } from '../../const/redis';
+import {
+  QUESTION_PHASE,
+  TURN_GUESS_PHASE,
+  TURN_REVEAL_PHASE
+} from '../../const/game';
+
 import { redisClient } from '../../database/redis';
+import { shuffle, extractQuestionsAndShuffle } from '../../utils/utils';
+
+import {
+  getAndParseGameState,
+  // parseGameState,
+  formatGameState,
+  cleanUpGameState,
+  updateGameStateInServer,
+  formatAndUpdateGameState
+} from '../handlers/room';
+
+import Question from '../../models/Question';
 
 const addQuestions = async (roomCode, questions) => {
   const key = `${QUESTIONS_PREFIX}-${roomCode}`;
@@ -118,6 +136,82 @@ const checkCorrectAnswer = (gameState, clientId, answer) => {
   return gameState[clientId]['currAnswer']['value'] === answer;
 };
 
+const startGame = async (roomCode, deckId) => {
+  if (!roomCode || !deckId) throw new Error('Missing fields for game start');
+
+  let questions = await Question.findAll({
+    where: {
+      deckId
+    },
+    attributes: ['question'],
+    raw: true
+  });
+
+  questions = extractQuestionsAndShuffle(questions);
+  const numQuestions = questions.length;
+
+  const gameState = await Promise.all([
+    getAndParseGameState(roomCode),
+    addQuestions(roomCode, questions)
+  ]).then((res) => res[0]);
+
+  const players = Object.keys(gameState['players']);
+  shuffle(players);
+
+  const nextQuestion = await Promise.all([
+    getNextQuestion(roomCode),
+    addGuessingOrder(roomCode, players)
+  ]).then((res) => res[0]);
+
+  const updatedGameState = {
+    ...gameState,
+    phase: QUESTION_PHASE,
+    currQuestion: nextQuestion,
+    questionsLeft: numQuestions - 1
+  };
+
+  console.log('START GAME', '- UPDATED GAME STATE', updatedGameState);
+
+  await formatAndUpdateGameState(updatedGameState);
+
+  return updatedGameState;
+};
+
+const switchToQuestionsPhase = async (roomCode, io) => {
+  const [nextQuestion, gameState] = await Promise.all([
+    getNextQuestion(roomCode),
+    getAndParseGameState(roomCode)
+  ]).then((res) => {
+    return res;
+  });
+
+  // No more questions, end game and emit final state (with the scores)
+  if (!gameState.questionsLeft) {
+    console.log('No questions left!');
+    io.to(roomCode).emit('game-end', gameState);
+    return;
+  }
+
+  const players = Object.keys(gameState['players']);
+  shuffle(players);
+
+  const updatedGameState = {
+    ...gameState,
+    phase: QUESTION_PHASE,
+    currQuestion: nextQuestion,
+    questionsLeft: gameState.questionsLeft - 1
+  };
+
+  console.log('NEXT QUESTION', '- UPDATED GAME STATE', updatedGameState);
+
+  await Promise.all([
+    formatAndUpdateGameState(updatedGameState),
+    addGuessingOrder(roomCode, players)
+  ]);
+
+  return updatedGameState;
+};
+
 export {
   addQuestions,
   addGuessingOrder,
@@ -128,5 +222,7 @@ export {
   updateCorrectGuess,
   prepareForNextQuestion,
   getRemainingAnswers,
-  checkCorrectAnswer
+  checkCorrectAnswer,
+  startGame,
+  switchToQuestionsPhase
 };

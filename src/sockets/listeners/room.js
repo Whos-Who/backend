@@ -37,6 +37,10 @@ const intializeRoomListeners = (socket, io) => {
 
       // Tell client room has been found and he can join room
       socket.emit('room-join', gameState);
+      io.in(roomCode).emit('user-join', {
+        clientId: clientId,
+        gameState: gameState
+      });
       socket.join(roomCode);
     } catch (err) {
       socket.emit('error-room-join', err);
