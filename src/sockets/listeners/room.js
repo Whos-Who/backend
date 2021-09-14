@@ -10,7 +10,7 @@ const intializeRoomListeners = (socket, io) => {
     try {
       const { username } = data;
 
-      if (!username) throw new Error('Missing field!');
+      if (!username) throw new Error('Missing field for room-create!');
 
       const roomCode = socket.id;
       const gameState = await createRoom(roomCode, clientId, username);
@@ -30,7 +30,8 @@ const intializeRoomListeners = (socket, io) => {
     try {
       const { roomCode, username } = data;
 
-      if (!username || !roomCode) throw new Error('Missing field!');
+      if (!username || !roomCode)
+        throw new Error('Missing field for room-join!');
 
       const gameState = await joinRoom(roomCode, clientId, username);
 
@@ -49,7 +50,7 @@ const intializeRoomListeners = (socket, io) => {
     try {
       const { roomCode } = data;
 
-      if (!roomCode) throw new Error('Missing field!');
+      if (!roomCode) throw new Error('Missing field for room-leave!');
 
       const [gameState, newHost] = await leaveRoom(roomCode, clientId);
 
@@ -57,7 +58,7 @@ const intializeRoomListeners = (socket, io) => {
       socket.emit('room-leave');
       socket.leave(roomCode);
 
-      if (gameState.playerCount == 0) {
+      if (gameState.playerCount === 0) {
         const res = await removeRoom(gameState);
         // Debugging purpose
         if (res) console.log('Removed room');

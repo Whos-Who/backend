@@ -1,5 +1,5 @@
 import { redisClient } from '../../database/redis';
-import { ROOM_PREFIX } from '../../const/room';
+import { ROOM_PREFIX } from '../../const/redis';
 import { LOBBY_PHASE } from '../../const/game';
 import { canJoin } from '../../utils/sockets/room';
 
@@ -12,9 +12,9 @@ const intializeGameState = (roomCode, clientId, username) => {
     currQuestion: '',
     currAnswerer: '',
     playerCount: 1,
-    questionCount: 0,
+    questionsLeft: 0,
     selectedPlayerId: '',
-    selectedAnswerClientId: '',
+    selectedAnswer: '',
     players: {
       [clientId]: intializePlayerState(username)
     }
@@ -48,7 +48,7 @@ const parseGameState = (gameState) => {
   return {
     ...gameState,
     playerCount: Number(gameState.playerCount),
-    questionCount: Number(gameState.questionCount),
+    questionsLeft: Number(gameState.questionsLeft),
     players: players
   };
 };
@@ -162,7 +162,7 @@ const leaveRoom = async (roomCode, clientId) => {
 
   // If host is same as person who left, select new one
   if (
-    updatedGameState['host'] == clientId &&
+    updatedGameState['host'] === clientId &&
     updatedGameState.playerCount > 0
   ) {
     const newHost = pickNewHost(updatedGameState);
