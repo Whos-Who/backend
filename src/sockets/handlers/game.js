@@ -337,15 +337,16 @@ const switchToTurnGuessPhase = async (roomCode, socket, io) => {
 const addPlayerAnswer = async (roomCode, playerId, answer) => {
   const gameState = await getAndParseGameState(roomCode);
 
-  console.log(gameState['players'][playerId]);
-
   const updatedGameState = {
     ...gameState
   };
 
   updatedGameState['players'][playerId]['currAnswer']['value'] = answer;
 
-  await formatAndUpdateGameState(gameState);
+  // Possible race condition here when multiple concurrent submissions?
+  // Maybe can use mutex, but see performance first
+
+  await formatAndUpdateGameState(updatedGameState);
 
   console.log('SUBMIT ANSWER', '- UPDATED GAME STATE', gameState);
   console.log(
