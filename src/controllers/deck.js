@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import { Op } from 'sequelize';
 
 import createError from 'http-errors';
 import Deck from '../models/Deck';
@@ -18,7 +19,11 @@ async function retrieveDeck(req, res, next) {
 
 async function indexDeck(req, res, next) {
   try {
-    const decks = await Deck.findAll({ order: [['id', 'ASC']] });
+    const userId = req.userId;
+    const decks = await Deck.findAll({
+      where: { [Op.or]: [{ userId: userId }, { userId: null }] },
+      order: [['id', 'ASC']]
+    });
     res.status(StatusCodes.OK).json(decks);
   } catch (err) {
     next(err);
