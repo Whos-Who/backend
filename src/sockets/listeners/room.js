@@ -35,9 +35,14 @@ const intializeRoomListeners = (socket, io) => {
 
       const gameState = await joinRoom(roomCode, clientId, username);
 
+      //Broadcast to room user is joining
+      io.in(roomCode).emit('user-join', {
+        clientId: clientId,
+        gameState: gameState
+      });
+      socket.join(roomCode);
       // Tell client room has been found and he can join room
       socket.emit('room-join', gameState);
-      socket.join(roomCode);
     } catch (err) {
       socket.emit('error-room-join', err);
       console.log('join room error occured', err);

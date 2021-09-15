@@ -1,3 +1,5 @@
+// Prefixes used in creating keys of redis
+
 const ROOM_PREFIX = 'room';
 const QUESTIONS_PREFIX = 'questions';
 const GUESSING_ORDER_PREFIX = 'guessing-order';

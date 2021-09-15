@@ -2,6 +2,7 @@ import { redisClient } from '../../database/redis';
 import { ROOM_PREFIX } from '../../const/redis';
 import { LOBBY_PHASE } from '../../const/game';
 import { canJoin } from '../../utils/sockets/room';
+import { Mutex } from 'redis-semaphore';
 
 // Create new game state
 const intializeGameState = (roomCode, clientId, username) => {
@@ -34,6 +35,42 @@ const intializePlayerState = (username) => {
   };
 };
 
+const cleanGameState = (roomCode, clientId) => {
+  return {
+    roomCode,
+    host: clientId,
+    phase: LOBBY_PHASE,
+    currQuestion: '',
+    currAnswerer: '',
+    playerCount: 0,
+    questionsLeft: 0,
+    selectedPlayerId: '',
+    selectedAnswer: '',
+    players: {}
+  };
+};
+
+const cleanUpGameState = (gameState) => {
+  const players = gameState.players;
+  const hostId = gameState.host;
+  const roomCode = gameState.roomCode;
+
+  let cleanedGameState = cleanGameState(roomCode, hostId);
+
+  console.log(players);
+  Object.entries(players).forEach(([clientId, state]) => {
+    cleanedGameState = addUserToRoom(
+      clientId,
+      state.username,
+      cleanedGameState
+    );
+  });
+
+  console.log('Cleaned Game State', cleanedGameState);
+
+  return cleanedGameState;
+};
+
 // Stringify nested structures to put in Redis, this reduces request rate and prevents overloading Redis since we r on free version :(
 const formatGameState = (gameState) => {
   return {
@@ -43,6 +80,7 @@ const formatGameState = (gameState) => {
 };
 
 const parseGameState = (gameState) => {
+  console.log(gameState);
   const players = JSON.parse(gameState.players);
 
   return {
@@ -60,10 +98,25 @@ const getGameState = async (roomCode) => {
   return gameState;
 };
 
+const getAndParseGameState = async (roomCode) => {
+  const gameState = await getGameState(roomCode);
+
+  if (!gameState) throw new Error(`Game with ${roomCode} }does not exist!`);
+
+  const parsedGameState = parseGameState(gameState);
+
+  return parsedGameState;
+};
+
 const updateGameStateInServer = async (gamestate) => {
   const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
 
   await redisClient.hmset(key, gamestate);
+};
+
+const formatAndUpdateGameState = async (gameState) => {
+  const formattedGameState = formatGameState(gameState);
+  await updateGameStateInServer(formattedGameState);
 };
 
 const removeRoom = async (gamestate) => {
@@ -111,9 +164,7 @@ const pickNewHost = (gameState) => {
 
 const createRoom = async (roomCode, clientId, username) => {
   const gameState = intializeGameState(roomCode, clientId, username);
-
-  const formattedGameState = formatGameState(gameState);
-  await updateGameStateInServer(formattedGameState);
+  await formatAndUpdateGameState(gameState);
 
   console.log('room created by', clientId, gameState);
 
@@ -123,26 +174,32 @@ const createRoom = async (roomCode, clientId, username) => {
 const joinRoom = async (roomCode, clientId, username) => {
   if (!roomCode) throw new Error('Empty room code!');
 
-  const gameState = await getGameState(roomCode);
+  const key = `${ROOM_PREFIX}-${roomCode}`;
+  // Possible concurrency issue here when multiple people join at once
+  const mutex = new Mutex(redisClient, key);
+  await mutex.acquire();
+  let gameState;
+  let updatedGameState;
 
-  if (!gameState) throw new Error('Game does not exist!');
+  try {
+    gameState = await getAndParseGameState(roomCode);
 
-  const parsedGameState = parseGameState(gameState);
+    if (!canJoin(gameState, clientId))
+      throw new Error('Unable to join game! Game in progress!');
 
-  if (!canJoin(parsedGameState, clientId))
-    throw new Error('Unable to join game! Game in progress!');
+    updatedGameState = addUserToRoom(
+      // For testing purposes
+      // 'Noobmaster69',
+      // '3216 god',
+      clientId,
+      username,
+      gameState
+    );
 
-  const updatedGameState = addUserToRoom(
-    // For testing purposes
-    // 'Noobmaster69',
-    // '3216 god',
-    clientId,
-    username,
-    parsedGameState
-  );
-
-  const formattedGameState = formatGameState(updatedGameState);
-  await updateGameStateInServer(formattedGameState);
+    await formatAndUpdateGameState(updatedGameState);
+  } finally {
+    await mutex.release();
+  }
 
   console.log(clientId, 'has joined, new game state', updatedGameState);
 
@@ -152,26 +209,33 @@ const joinRoom = async (roomCode, clientId, username) => {
 const leaveRoom = async (roomCode, clientId) => {
   if (!roomCode) throw new Error('Empty room code!');
 
-  const gameState = await getGameState(roomCode);
+  const key = `${ROOM_PREFIX}-${roomCode}`;
+  // Possible concurrency issue here when multiple people join at once
+  const mutex = new Mutex(redisClient, key);
+  await mutex.acquire();
 
-  if (!gameState) throw new Error('Game does not exist!');
-  const parsedGameState = parseGameState(gameState);
-  const updatedGameState = removeUserFromRoom(clientId, parsedGameState);
-
+  let gameState;
+  let updatedGameState;
   let newHost;
 
-  // If host is same as person who left, select new one
-  if (
-    updatedGameState['host'] === clientId &&
-    updatedGameState.playerCount > 0
-  ) {
-    const newHost = pickNewHost(updatedGameState);
-    updatedGameState['host'] = newHost;
-    console.log('NEW HOST', newHost);
-  }
+  try {
+    gameState = await getAndParseGameState(roomCode);
+    updatedGameState = removeUserFromRoom(clientId, gameState);
 
-  const formattedGameState = formatGameState(updatedGameState);
-  await updateGameStateInServer(formattedGameState);
+    // If host is same as person who left, select new one
+    if (
+      updatedGameState['host'] === clientId &&
+      updatedGameState.playerCount > 0
+    ) {
+      newHost = pickNewHost(updatedGameState);
+      updatedGameState['host'] = newHost;
+      console.log('NEW HOST', newHost);
+    }
+
+    await formatAndUpdateGameState(updatedGameState);
+  } finally {
+    await mutex.release();
+  }
 
   console.log(clientId, 'has left, new game state', updatedGameState);
 
@@ -181,6 +245,7 @@ const leaveRoom = async (roomCode, clientId) => {
 export {
   intializeGameState,
   getGameState,
+  cleanUpGameState,
   intializePlayerState,
   formatGameState,
   parseGameState,
@@ -191,5 +256,7 @@ export {
   createRoom,
   joinRoom,
   leaveRoom,
-  removeRoom
+  removeRoom,
+  getAndParseGameState,
+  formatAndUpdateGameState
 };
