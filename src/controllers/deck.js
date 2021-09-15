@@ -3,10 +3,13 @@ import { Op } from 'sequelize';
 
 import createError from 'http-errors';
 import Deck from '../models/Deck';
+import Question from '../models/Question';
 
 async function retrieveDeck(req, res, next) {
   try {
-    const deck = await Deck.findByPk(req.params.id);
+    const deck = await Deck.findByPk(req.params.id, {
+      include: Question
+    });
     if (deck === null) {
       throw createError(StatusCodes.NOT_FOUND, 'Deck not found!');
     }
@@ -40,7 +43,8 @@ async function showDeck(req, res, next) {
 
 async function createDeck(req, res, next) {
   try {
-    const deck = await Deck.create(req.body);
+    const userId = req.userId;
+    const deck = await Deck.create({ ...req.body, userId: userId });
     res.status(StatusCodes.CREATED).json(deck);
   } catch (err) {
     next(err);
