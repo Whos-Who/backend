@@ -10,9 +10,9 @@ export const initializeWebSockets = (server) => {
     }
   });
 
-  // For FE to understand how it works
   io.on('connection', (socket) => {
-    // console.log(socket.id, 'JOINED');
+    // For FE to check if connected
+    console.log(socket.id, 'JOINED');
     io.send(socket.id).emit('WELCOME', {});
 
     // Set up socket listeners for room events
