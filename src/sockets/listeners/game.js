@@ -125,7 +125,7 @@ const intializeGameListeners = (socket, io) => {
           console.log('TIMES UP!');
           io.to(roomCode).emit('game-phase-turn-reveal', unansweredGameState);
         }
-      }, 10000);
+      }, 30000);
     } catch (err) {
       socket.emit('error-game-next-turn', err);
       console.log('game next turn error occured', err);
