@@ -4,6 +4,7 @@ import Redis from 'ioredis';
 
 import { REDIS_URL } from '../const/const';
 // Use local Redis to manage game state when working in dev mode
+// Set expiration time of rom to an hour
 export const DEFAULT_EXPIRATION = 3600;
 
 // Redis Client intialization

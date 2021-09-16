@@ -23,7 +23,6 @@ const intializeRoomListeners = (socket, io) => {
     } catch (err) {
       socket.emit('error-room-create', err);
       console.log('create room error occured', err);
-      throw err;
     }
   });
 
@@ -48,7 +47,6 @@ const intializeRoomListeners = (socket, io) => {
     } catch (err) {
       socket.emit('error-room-join', err);
       console.log('join room error occured', err);
-      throw err;
     }
   });
 
@@ -86,7 +84,6 @@ const intializeRoomListeners = (socket, io) => {
     } catch (err) {
       socket.emit('error-room-leave', err);
       console.log('leave room occured', err);
-      throw err;
     }
   });
 };
