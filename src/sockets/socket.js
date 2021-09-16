@@ -1,7 +1,6 @@
 import { Server } from 'socket.io';
 import { intializeGameListeners } from './listeners/game';
 import { intializeRoomListeners } from './listeners/room';
-import { redisClient } from '../database/redis';
 
 export const initializeWebSockets = (server) => {
   const io = new Server(server, {

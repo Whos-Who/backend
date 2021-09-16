@@ -1,12 +1,10 @@
 import { createRoom, joinRoom, leaveRoom, removeRoom } from '../handlers/room';
-import { customAlphabet } from 'nanoid';
-import { ROOM_CODE_LENGTH, ROOM_CODE_SYMBOLS } from '../../const/game';
+import { nanoId } from '../../utils/utils';
 
 const intializeRoomListeners = (socket, io) => {
   // Retrieves from socket query parameters
   const { clientId } = socket.handshake.query;
   const socketId = socket.id;
-  const nanoId = customAlphabet(ROOM_CODE_SYMBOLS, ROOM_CODE_LENGTH);
 
   // Create room when user clicks create room and makes user host
   socket.on('room-create', async (data) => {
