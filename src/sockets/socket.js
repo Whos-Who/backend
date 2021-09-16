@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import { intializeGameListeners } from './listeners/game';
 import { intializeRoomListeners } from './listeners/room';
 
 export const initializeWebSockets = (server) => {
@@ -16,8 +17,7 @@ export const initializeWebSockets = (server) => {
 
     // Set up socket listeners for room events
     intializeRoomListeners(socket, io);
-
-    // TO DO:, set up socket listener for gmaeplay events
+    intializeGameListeners(socket, io);
 
     socket.on('disconnecting', (reason) => {
       console.log(socket.id, 'LEAVING');

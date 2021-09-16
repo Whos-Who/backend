@@ -2,7 +2,7 @@
 
 - Documentation of Socket listeners, the data they should be receiving and a description of what kind of response the event listeners will give.
 - All event listeners require query parameters `clientId`, a UUID.
-- `data` in the socket listeners is a JSON object, which is referred to as Required Payload throughout the documentation
+- `data` in the socket listeners is a JSON object, which is referred to as `Required Payload` throughout the documentation
 
 # Table of Content
 
