@@ -12,6 +12,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       deckId: {
+        allowNull: false,
         type: Sequelize.INTEGER,
         references: {
           model: 'Decks',
