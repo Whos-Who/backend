@@ -11,8 +11,8 @@ export const initializeWebSockets = (server) => {
     }
   });
 
-  // For FE to understand how it works
   io.on('connection', (socket) => {
+    // For FE to check if connected
     console.log(socket.id, 'JOINED');
     io.send(socket.id).emit('WELCOME', {});
 

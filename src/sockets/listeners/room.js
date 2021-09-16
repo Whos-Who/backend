@@ -1,9 +1,12 @@
 import { createRoom, joinRoom, leaveRoom, removeRoom } from '../handlers/room';
+import { customAlphabet } from 'nanoid';
+import { ROOM_CODE_LENGTH, ROOM_CODE_SYMBOLS } from '../../const/game';
 
 const intializeRoomListeners = (socket, io) => {
   // Retrieves from socket query parameters
   const { clientId } = socket.handshake.query;
   const socketId = socket.id;
+  const nanoId = customAlphabet(ROOM_CODE_SYMBOLS, ROOM_CODE_LENGTH);
 
   // Create room when user clicks create room and makes user host
   socket.on('room-create', async (data) => {
@@ -12,7 +15,8 @@ const intializeRoomListeners = (socket, io) => {
 
       if (!username) throw new Error('Missing field for room-create!');
 
-      const roomCode = 1234;
+      const roomCode = await nanoId();
+      console.log('ROOMCODE:', roomCode);
       const gameState = await createRoom(roomCode, clientId, username);
 
       // Tell client room is created and he can join room
