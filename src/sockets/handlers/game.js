@@ -142,6 +142,17 @@ const checkResult = (gameState, clientId, answer) => {
 };
 
 const getQuestions = async (deckId) => {
+  let whereCondition;
+
+  if (deckId) {
+    whereCondition = {
+      deckId: deckId
+    };
+  } else {
+    whereCondition = {
+      title: 'Test Deck 1'
+    };
+  }
   const questionsJson = await Question.findAll({
     where: {
       deckId
@@ -173,7 +184,7 @@ const updateStateToQuestionPhase = (gameState, nextQuestion, numQuestions) => {
 };
 
 const startGame = async (roomCode, deckId) => {
-  if (!roomCode || !deckId) throw new Error('Missing fields for game start');
+  if (!roomCode) throw new Error('Missing fields for game start');
 
   const questions = await getQuestions(deckId);
   const numQuestions = questions.length;
