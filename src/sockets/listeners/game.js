@@ -11,6 +11,7 @@ import {
   switchToTurnRevealPhase
 } from '../handlers/game';
 import { TURN_GUESS_PHASE, TURN_REVEAL_PHASE } from '../../const/game';
+import { updatePlayerActivity } from '../../utils/utils';
 
 const intializeGameListeners = (socket, io) => {
   // Retrieves from socket query parameters
@@ -26,6 +27,8 @@ const intializeGameListeners = (socket, io) => {
 
       // Tell client game has begun and proceed to the question phase
       io.to(roomCode).emit('game-phase-question', gameState);
+
+      await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-start', err);
       console.log('game start error occured', err);
@@ -41,6 +44,7 @@ const intializeGameListeners = (socket, io) => {
 
       // Tell client to proceed to open question and let user answer
       io.to(roomCode).emit('game-phase-question', gameState);
+      await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-next-question', err);
       console.log('game next question error occured', err);
@@ -54,6 +58,7 @@ const intializeGameListeners = (socket, io) => {
       const gameState = await endGame(roomCode);
       // Tell client game has ended and bring players back to the lobby
       io.to(roomCode).emit('game-close', gameState);
+      await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-end', err);
       console.log('game end error occured', err);
@@ -70,6 +75,7 @@ const intializeGameListeners = (socket, io) => {
         gameState,
         readyClientId: clientId
       });
+      await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-player-answer-submission', err);
       console.log('game player answer submission error occured', err);
@@ -89,6 +95,7 @@ const intializeGameListeners = (socket, io) => {
       console.log('SUBMIT MATCH', '- UPDATED GAME STATE', gameState);
 
       io.to(roomCode).emit('game-phase-turn-reveal', gameState);
+      await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-player-match-submission', err);
       console.log('game player match submission error occured', err);
@@ -121,6 +128,7 @@ const intializeGameListeners = (socket, io) => {
           io.to(roomCode).emit('game-phase-turn-reveal', unansweredGameState);
         }
       }, 30000);
+      await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-next-turn', err);
       console.log('game next turn error occured', err);

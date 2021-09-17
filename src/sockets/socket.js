@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import { intializeGameListeners } from './listeners/game';
 import { intializeRoomListeners } from './listeners/room';
+import { getLatestPlayerActivity } from '../utils/utils';
 
 export const initializeWebSockets = (server) => {
   const io = new Server(server, {
@@ -9,6 +10,8 @@ export const initializeWebSockets = (server) => {
       method: ['GET', 'POST']
     }
   });
+  // Middleware to check if player in game already
+  getLatestPlayerActivity(io);
 
   io.on('connection', (socket) => {
     // For FE to check if connected
