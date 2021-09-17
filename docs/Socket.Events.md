@@ -48,16 +48,16 @@ I would also recommend that you set up the Backend repository locally to test th
 socket.on('room-create', (data) => {....})
 ```
 
-### Description
+#### Description
 
 Event listener that will respond when client decides to create a room, this listener requires the
 `username`, in addition to the query parameters.
 
-### Required Payload Attributes
+#### Required Payload Attributes
 
 - `username` - username of the client attempting to create a room.
 
-### Emitted events
+#### Emitted events
 
 **Success**
 
@@ -75,17 +75,17 @@ Event listener that will respond when client decides to create a room, this list
 socket.on('room-join', (data) => {....})
 ```
 
-### Description
+#### Description
 
 Event listener that will respond when client decides to join a room, this listener requires the
 `username` and `roomCode`, in addition to the query parameters.
 
-### Required Payload Attributes
+#### Required Payload Attributes
 
 - `username` - username of the client attempting to join a room.
 - `roomCode` - room ID, which other users can join the room
 
-### Emitted events
+#### Emitted events
 
 **Success**
 
@@ -104,16 +104,16 @@ Event listener that will respond when client decides to join a room, this listen
 socket.on('room-leave', (data) => {....})
 ```
 
-### Description
+#### Description
 
 Event listener that will respond when client decides to leave a room, this listener requires the
 `roomCode`, in addition to the query parameters.
 
-### Required Payload Attributes
+#### Required Payload Attributes
 
 - `roomCode` - room id of the client attempting to leave.
 
-### Emitted events
+#### Emitted events
 
 **Success**
 
@@ -139,16 +139,16 @@ Event listener that will respond when client decides to leave a room, this liste
 socket.on('game-start', (data) => ....)
 ```
 
-### Description
+#### Description
 
 Event listener when host of game room decides to start the game. This listener requires 2 attributes in the payload, the `roomCode` of the room starting the game and the chosen question deck id `deckId`
 
-### Required Payload
+#### Required Payload
 
 - `roomCode` room code of room starting game
 - `deckId` id of question deck to use questions from
 
-### Emitted events
+#### Emitted events
 
 **Success**
 
@@ -168,19 +168,19 @@ socket.on('game-next-question', (data) => ....)
 
 <br />
 
-### Description
+#### Description
 
 Event listener when host of game room requests for next question. This listener requires an attribute `roomCode`, the room code of the game requesting for the next question
 
 <br />
 
-### Required Payload
+#### Required Payload
 
 - `roomCode` room code of room player is joining
 
 <br />
 
-### Emitted events
+#### Emitted events
 
 **Success**
 
@@ -198,15 +198,15 @@ Event listener when host of game room requests for next question. This listener 
 socket.on('game-end', (data) => ....)
 ```
 
-### Description
+#### Description
 
 Event listener when host of game room requests for next question. This listener requires an attribute `roomCode`, the room code of the game requesting for the next question
 
-### Required Payload
+#### Required Payload
 
 - `roomCode` room code of the ending game
 
-### Emitted events
+#### Emitted events
 
 **Success**
 
@@ -224,15 +224,15 @@ Event listener when host of game room requests for next question. This listener 
 socket.on('game-player-answer-submission', (data) => ....)
 ```
 
-### Description
+#### Description
 
 Event listener when player answers the question. This listener require 2 attributes `roomCode` and `answer`, the answer the player has filled up.
 
-### Required Payload
+#### Required Payload
 
 - `roomCode` room code of the ongoing game
 
-### Emitted events
+#### Emitted events
 
 **Success**
 
@@ -252,17 +252,17 @@ Event listener when player answers the question. This listener require 2 attribu
 socket.on('game-player-match-submission', (data) => ....)
 ```
 
-### Description
+#### Description
 
 Event listener when player makes a guess to match the player to answer. This listener require 3 attributes `roomCode`, `selectedPlayerId ` and `selectedAnswer`.
 
-### Required Payload
+#### Required Payload
 
 - `roomCode` room code of the ongoing game
 - `selectedPlayerId` the player chosen in the guess
 - `selectedAnswer` the answer the player selected in the guess
 
-### Emitted events
+#### Emitted events
 
 **Success**
 
@@ -280,17 +280,17 @@ Event listener when player makes a guess to match the player to answer. This lis
 socket.on('game-next-turn', (data) => ....)
 ```
 
-### Description
+#### Description
 
 - Event listener when for when the game goes to the next turn and guesser. This listener require 1 attribute `roomCode`.
 - An async timer of 30 seconds will also be fired, in which if the current game state is not switched to
   the `TURN_REVEAL_PHASE`, it will send a `game-phase-turn-reveal` event to all clients to force a change to that phase
 
-### Required Payload
+#### Required Payload
 
 - `roomCode` room code of the ongoing game
 
-### Emitted events
+#### Emitted events
 
 **Success**
 
