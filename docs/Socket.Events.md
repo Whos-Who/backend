@@ -1,8 +1,10 @@
-# Socket.IO event listeners
+# Socket.IO event listeners and emitters
 
 - Documentation of Socket listeners, the data they should be receiving and a description of what kind of response the event listeners will give.
 - All event listeners require query parameters `clientId`, a UUID.
 - `data` in the socket listeners is a JSON object, which is referred to as `Required Payload` throughout the documentation
+
+<br />
 
 # Table of Content
 
@@ -12,7 +14,15 @@
   - [room-join](#room-join)
   - [room-leave](#room-leave)
 - [Game](#game)
-- [Misc](#misc)
+  - [game-start](#game-start)
+  - [game-next-question](#game-next-question)
+  - [game-end](#game-end)
+  - [game-player-answer-submission](#game-player-answer-submission)
+  - [game-player-match-submission](#game-player-match-submission)
+  - [game-next-turn](#game-next-turn)
+- [Player](#player)
+
+<br />
 
 ## How to use
 
@@ -22,10 +32,15 @@ To trigger and listen to certain events on the client side, you can use `socket.
 The full documentation can be found [here](https://socket.io/docs/v4/client-api/)
 
 I would also recommend that you set up the Backend repository locally to test the events, as you can clear the Redis storage by hitting the following endpoints:
+
 - `POST /reset` to clear all the game states in your local Redis
 - `DELETE /reset/:roomid` to clear all game state related to `roomid`
 
+<br />
+
 ## Room
+
+<br />
 
 ### room-create
 
@@ -40,17 +55,19 @@ Event listener that will respond when client decides to create a room, this list
 
 ### Required Payload Attributes
 
-`username` - username of the client attempting to create a room.
+- `username` - username of the client attempting to create a room.
 
-### Response
+### Emitted events
 
 **Success**
 
-Server will emit a `room-join` to the client together with the `gameState` back to the client, indicating that the client can join the room.
+- Server will emit a `room-join` to the client together with the `gameState` back to the client, indicating that the client can join the room, with the `gameState` in the `LOBBY` phase.
 
 **Failure**
 
-Server will emit a `error-room-create` to the client, together with the error message `err`, indicating an error occured.
+- Server will emit a `error-room-create` to the client, together with the error message `err`, indicating an error occured.
+
+<br />
 
 ### room-join
 
@@ -65,18 +82,21 @@ Event listener that will respond when client decides to join a room, this listen
 
 ### Required Payload Attributes
 
-`username` - username of the client attempting to join a room.
-`roomCode` - room ID, which other users can join the room
+- `username` - username of the client attempting to join a room.
+- `roomCode` - room ID, which other users can join the room
 
-### Response
+### Emitted events
 
 **Success**
 
-Server will emit a `room-join` to the client together with the `gameState` back to the client, indicating that the client can join the room.
+- Server will emit a `room-join` to the client together with the `gameState` back to the client, indicating that the client can join the room.
+- Server will emit a `user-join` to all clients in room with `roomCode` together with the updated Game State with the newly joined player
 
 **Failure**
 
-Server will emit a `error-room-join` to the client, together with the error message `err`, indicating an error occured.
+- Server will emit a `error-room-join` to the client, together with the error message `err`, indicating an error occured.
+
+<br />
 
 ### room-leave
 
@@ -91,37 +111,224 @@ Event listener that will respond when client decides to leave a room, this liste
 
 ### Required Payload Attributes
 
-`roomCode` - room id of the client attempting to leave.
+- `roomCode` - room id of the client attempting to leave.
 
-### Response
+### Emitted events
 
 **Success**
 
-Server will emit a `room-leave` to the client together with the `gameState` back to the client, indicating that the client can join the room.
+- Server will emit a `room-leave` to the client together with the `gameState` back to the client, indicating that the client can join the room.
 
-Server will also emit a `user-leave` event to announce to the all clients in the room which user had left. Response is JSON object with the following attributes:
-- `clientId` - clientId of user who left
-- `gameState` - updated gameState
+- Server will also emit a `user-leave` event to announce to the all clients in the room which user had left. Response is JSON object `gameState`, representing the updated gameState
 
-If the previous host left, the server will emit a `new-host` event to announce who is the new host. Response is `clientId` - the clientId of user who left.
+- If the previous host left, the server will emit a `new-host` event to announce who is the new host. Response is `clientId` - the clientId of user who left.
 
 **Failure**
 
-Server will emit a `error-room-leave` to the client, together with the error message `err`, indicating an error occured.
+- Server will emit a `error-room-leave` to the client, together with the error message `err`, indicating an error occured.
+
+<br />
 
 ## Game
 
-## Misc
+<br />
+
+### game-start
+
+```
+socket.on('game-start', (data) => ....)
+```
+
+### Description
+
+Event listener when host of game room decides to start the game. This listener requires 2 attributes in the payload, the `roomCode` of the room starting the game and the chosen question deck id `deckId`
+
+### Required Payload
+
+- `roomCode` room code of room starting game
+- `deckId` id of question deck to use questions from
+
+### Emitted events
+
+**Success**
+
+- Server will emit a `game-phase-question` to the client together with the `gameState` of the intialized game back to the client, with the gamestate in the `QUESTIONS` phase
+
+**Failure**
+
+- Server will emit a `error-game-start` to the client, together with the error message `err`, indicating an error occured.
+
+<br />
+
+### game-next-question
+
+```
+socket.on('game-next-question', (data) => ....)
+```
+
+<br />
+
+### Description
+
+Event listener when host of game room requests for next question. This listener requires an attribute `roomCode`, the room code of the game requesting for the next question
+
+<br />
+
+### Required Payload
+
+- `roomCode` room code of room player is joining
+
+<br />
+
+### Emitted events
+
+**Success**
+
+- Server will emit a `game-phase-question` to the client together with the `gameState` of the updated game state back to the client with the gamestate in the `QUESTIONS` phase
+
+**Failure**
+
+- Server will emit a `error-game-next-question` to the client, together with the error message `err`, indicating an error occured.
+
+<br />
+
+### game-end
+
+```
+socket.on('game-end', (data) => ....)
+```
+
+### Description
+
+Event listener when host of game room requests for next question. This listener requires an attribute `roomCode`, the room code of the game requesting for the next question
+
+### Required Payload
+
+- `roomCode` room code of the ending game
+
+### Emitted events
+
+**Success**
+
+- Server will emit a `game-close` to the client together with the `gameState`, back in the `LOBBY` phase.
+
+**Failure**
+
+- Server will emit a `error-game-end` to the client, together with the error message `err`, indicating an error occured.
+
+<br />
+
+### game-player-answer-submission
+
+```
+socket.on('game-player-answer-submission', (data) => ....)
+```
+
+### Description
+
+Event listener when player answers the question. This listener require 2 attributes `roomCode` and `answer`, the answer the player has filled up.
+
+### Required Payload
+
+- `roomCode` room code of the ongoing game
+
+### Emitted events
+
+**Success**
+
+- Server will emit a `game-player-ready` to the client a JSON object response with 2 attributes
+- `gameState` the updated gameState with the player's answer
+- `readyClientId` the player who is now ready
+
+**Failure**
+
+- Server will emit a `error-game-player-answer-submission` to the client, together with the error message `err`, indicating an error occured
+
+<br />
+
+### game-player-match-submission
+
+```
+socket.on('game-player-match-submission', (data) => ....)
+```
+
+### Description
+
+Event listener when player makes a guess to match the player to answer. This listener require 3 attributes `roomCode`, `selectedPlayerId ` and `selectedAnswer`.
+
+### Required Payload
+
+- `roomCode` room code of the ongoing game
+- `selectedPlayerId` the player chosen in the guess
+- `selectedAnswer` the answer the player selected in the guess
+
+### Emitted events
+
+**Success**
+
+- Server will emit a `game-player-turn-reveal` to the client together with the `gameState` updated to the `TURN_GUESS_REVEAL` phase
+
+**Failure**
+
+- Server will emit a `error-game-player-match-submission` to the client, together with the error message `err`, indicating an error occured
+
+<br />
+
+### game-next-turn
+
+```
+socket.on('game-next-turn', (data) => ....)
+```
+
+### Description
+
+- Event listener when for when the game goes to the next turn and guesser. This listener require 1 attribute `roomCode`.
+- An async timer of 30 seconds will also be fired, in which if the current game state is not switched to
+  the `TURN_REVEAL_PHASE`, it will send a `game-phase-turn-reveal` event to all clients to force a change to that phase
+
+### Required Payload
+
+- `roomCode` room code of the ongoing game
+
+### Emitted events
+
+**Success**
+
+- If there is still more than 1 answer left to match, server will emit a `game-phase-turn-guess` to the client to together with the updated gameState to indicate a change in phase to the `TURN_GUESS_PHASE`
+
+- If there is 1 or less answers left to guess, the server will emit a `game-phase-scoreboard` to the client to together with the updated gameState to indicate a change in phase to the `SCOREBOARD_PHASE`
+
+**Failure**
+
+- Server will emit a `error-game-next-turn` to the client, together with the error message `err`, indicating an error occured
+
+<br />
+
+## Player
 
 <!--
-Template, paste here for now
+<br />
 
 ### Title
-'''
-'''
+```
+socket.on('game-', (data) => ....)
+'```
+
+<br />
+
 ### Description
+
+<br />
+
 ### Required Payload
-### Response
+
+<br />
+
+### Emitted events
+
 **Success**
+
 **Failure**
+
+<br />
 -->

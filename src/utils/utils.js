@@ -1,3 +1,6 @@
+import { customAlphabet } from 'nanoid';
+import { ROOM_CODE_LENGTH, ROOM_CODE_SYMBOLS } from '../const/game';
+
 // Shuffles and array 'randomly', based on the knuth algorithm
 // Modifies the actual array
 
@@ -16,4 +19,6 @@ const shuffle = (arr) => {
   return arr;
 };
 
-export { shuffle };
+const nanoId = customAlphabet(ROOM_CODE_SYMBOLS, ROOM_CODE_LENGTH);
+
+export { shuffle, nanoId };

@@ -30,6 +30,7 @@ const addQuestions = async (roomCode, questions) => {
 
   // Create a key-value mapping of Redis arr[0] - rest of arr
   await redisClient.rpush(questions);
+  redisClient.expire(key, DEFAULT_EXPIRATION);
 };
 
 const addGuessingOrder = async (roomCode, players) => {
@@ -40,6 +41,7 @@ const addGuessingOrder = async (roomCode, players) => {
 
   // Create a key-value mapping of Redis arr[0] - rest of arr
   await redisClient.rpush(players);
+  redisClient.expire(key, DEFAULT_EXPIRATION);
 };
 
 const getNextQuestion = async (roomCode) => {

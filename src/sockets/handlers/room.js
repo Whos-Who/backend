@@ -1,4 +1,4 @@
-import { redisClient } from '../../database/redis';
+import { DEFAULT_EXPIRATION, redisClient } from '../../database/redis';
 import { ROOM_PREFIX } from '../../const/redis';
 import { LOBBY_PHASE } from '../../const/game';
 import { canJoin } from '../../utils/sockets/room';
@@ -80,7 +80,7 @@ const formatGameState = (gameState) => {
 };
 
 const parseGameState = (gameState) => {
-  console.log(gameState);
+  console.log('PARSED', gameState);
   const players = JSON.parse(gameState.players);
 
   return {
@@ -99,19 +99,25 @@ const getGameState = async (roomCode) => {
 };
 
 const getAndParseGameState = async (roomCode) => {
-  const gameState = await getGameState(roomCode);
+  try {
+    const gameState = await getGameState(roomCode);
 
-  if (!gameState) throw new Error(`Game with ${roomCode} }does not exist!`);
+    if (!Object.keys(gameState).length)
+      throw new Error(`Game with ${roomCode} does not exist!`);
 
-  const parsedGameState = parseGameState(gameState);
+    const parsedGameState = parseGameState(gameState);
 
-  return parsedGameState;
+    return parsedGameState;
+  } catch (err) {
+    throw err;
+  }
 };
 
 const updateGameStateInServer = async (gamestate) => {
   const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
 
   await redisClient.hmset(key, gamestate);
+  redisClient.expire(key, DEFAULT_EXPIRATION);
 };
 
 const formatAndUpdateGameState = async (gameState) => {
@@ -197,6 +203,8 @@ const joinRoom = async (roomCode, clientId, username) => {
     );
 
     await formatAndUpdateGameState(updatedGameState);
+  } catch (err) {
+    throw err;
   } finally {
     await mutex.release();
   }

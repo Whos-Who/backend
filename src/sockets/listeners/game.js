@@ -22,14 +22,13 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode, deckId } = data;
 
-      const gameState = startGame(roomCode, deckId);
+      const gameState = await startGame(roomCode, deckId);
 
       // Tell client game has begun and proceed to the question phase
       io.to(roomCode).emit('game-phase-question', gameState);
     } catch (err) {
       socket.emit('error-game-start', err);
       console.log('game start error occured', err);
-      throw err;
     }
   });
 
@@ -38,14 +37,13 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode } = data;
 
-      const gameState = switchToQuestionsPhase(roomCode);
+      const gameState = await switchToQuestionsPhase(roomCode);
 
       // Tell client to proceed to open question and let user answer
       io.to(roomCode).emit('game-phase-question', gameState);
     } catch (err) {
       socket.emit('error-game-next-question', err);
       console.log('game next question error occured', err);
-      throw err;
     }
   });
 
@@ -53,13 +51,12 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode } = data;
 
-      const gameState = endGame(roomCode);
+      const gameState = await endGame(roomCode);
       // Tell client game has ended and bring players back to the lobby
       io.to(roomCode).emit('game-close', gameState);
     } catch (err) {
       socket.emit('error-game-end', err);
       console.log('game end error occured', err);
-      throw err;
     }
   });
 
@@ -76,7 +73,6 @@ const intializeGameListeners = (socket, io) => {
     } catch (err) {
       socket.emit('error-game-player-answer-submission', err);
       console.log('game player answer submission error occured', err);
-      throw err;
     }
   });
 
@@ -96,7 +92,6 @@ const intializeGameListeners = (socket, io) => {
     } catch (err) {
       socket.emit('error-game-player-match-submission', err);
       console.log('game player match submission error occured', err);
-      throw err;
     }
   });
 
@@ -125,11 +120,10 @@ const intializeGameListeners = (socket, io) => {
           console.log('TIMES UP!');
           io.to(roomCode).emit('game-phase-turn-reveal', unansweredGameState);
         }
-      }, 10000);
+      }, 30000);
     } catch (err) {
       socket.emit('error-game-next-turn', err);
       console.log('game next turn error occured', err);
-      throw err;
     }
   });
 };
