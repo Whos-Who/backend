@@ -61,12 +61,13 @@ const getLatestPlayerActivity = async (io) => {
 
       // Player reconencts, new socket connection
       if (playerActivity.socketId != socket.id) {
-        const gameState = await getGameState(playerActivity.roomCode);
-        console.log(playerActivity.roomCode);
-        await updatePlayerActivity(clientId, socketId, gameState.roomCode);
-        console.log('RECONNECTING to game room', playerActivity.roomCode);
+        const roomCode = playerActivity.roomCode;
+        const gameState = await getGameState(roomCode);
+        console.log(roomCode);
+        await updatePlayerActivity(clientId, socketId, roomCode);
+        console.log('RECONNECTING to game room', roomCode);
         socket.join(roomCode);
-        socket.emit('player-reconnect', gameState);
+        io.in(roomCode).emit('player-reconnect', gameState);
       }
       next();
     } catch (err) {

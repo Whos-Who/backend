@@ -30,15 +30,19 @@ clientId - {
 }
 
 
-Tracking questions and guessing order for a particular game
+Tracking questions for a particular game
 
 questions-<roomId>: List / Deque of questions
+
+
+Tracking guessing order for a particular game
+
 guessing-order-<roomId>: List / Deque of clientIds
 
 
-Might need a user to connection status mapping, called a presence server for the reconnection, but let me do more research on it. Thinking of something like, where if player key is present but socket id changes -> reconnection occurred, not a new user joining a new room:
+Track player activity when player joins game, used for reconnecting to gameroom
 
-player-<clientId>:
+player-activity-<clientId>:
     socketId: string
     roomId: string
 
