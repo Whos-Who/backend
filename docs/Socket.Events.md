@@ -21,7 +21,8 @@
   - [game-player-match-submission](#game-player-match-submission)
   - [game-next-turn](#game-next-turn)
 - [Player (Emitters only)](#player-emitters-only)
--
+  - [player-reconnect](#player-reconnect)
+  - [player-disconnect](#player-disconnect)
 
 <br />
 
