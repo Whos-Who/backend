@@ -3,7 +3,6 @@ import { redisClient } from '../database/redis';
 import { ROOM_CODE_LENGTH, ROOM_CODE_SYMBOLS } from '../const/game';
 import { PLAYER_ACTIVITY_PREFIX } from '../const/redis';
 import { PLAYER_ACTIVITY_EXPIRATION } from '../database/redis';
-import { getGameState } from '../sockets/handlers/room';
 
 // Shuffles and array 'randomly', based on the knuth algorithm
 // Modifies the actual array
@@ -40,46 +39,15 @@ const removePlayerActivity = async (clientId) => {
   await redisClient.del(key);
 };
 
-const getPlayerActiviy = async (clientId) => {
+const getPlayerActivity = async (clientId) => {
   const key = `${PLAYER_ACTIVITY_PREFIX}-${clientId}`;
   return await redisClient.hgetall(key);
-};
-
-const getLatestPlayerActivity = async (io) => {
-  io.use(async (socket, next) => {
-    const { clientId } = socket.handshake.query;
-
-    try {
-      const playerActivity = await getPlayerActiviy(clientId);
-      console.log('Last seen player game', playerActivity);
-
-      if (!Object.keys(playerActivity).length) {
-        console.log('Nothing found on the player');
-        next(); // No logged player activity
-        return;
-      }
-
-      // Player reconencts, new socket connection
-      if (playerActivity.socketId != socket.id) {
-        const roomCode = playerActivity.roomCode;
-        const gameState = await getGameState(roomCode);
-        console.log(roomCode);
-        await updatePlayerActivity(clientId, socketId, roomCode);
-        console.log('RECONNECTING to game room', roomCode);
-        socket.join(roomCode);
-        io.in(roomCode).emit('player-reconnect', gameState);
-      }
-      next();
-    } catch (err) {
-      next(err);
-    }
-  });
 };
 
 export {
   shuffle,
   nanoId,
-  updatePlayerActivity,
   removePlayerActivity,
-  getLatestPlayerActivity
+  getPlayerActivity,
+  updatePlayerActivity
 };

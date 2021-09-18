@@ -80,7 +80,6 @@ const formatGameState = (gameState) => {
 };
 
 const parseGameState = (gameState) => {
-  console.log('PARSED', gameState);
   const players = JSON.parse(gameState.players);
 
   return {
@@ -193,14 +192,7 @@ const joinRoom = async (roomCode, clientId, username) => {
     if (!canJoin(gameState, clientId))
       throw new Error('Unable to join game! Game in progress!');
 
-    updatedGameState = addUserToRoom(
-      // For testing purposes
-      // 'Noobmaster69',
-      // '3216 god',
-      clientId,
-      username,
-      gameState
-    );
+    updatedGameState = addUserToRoom(clientId, username, gameState);
 
     await formatAndUpdateGameState(updatedGameState);
   } catch (err) {
