@@ -32,10 +32,7 @@ const getLatestPlayerActivity = async (io) => {
         console.log('RECONNECTING to game room', roomCode);
 
         // socket.emit('player-reconnect', gameState);
-        io.in(roomCode).emit('player-reconnect', {
-          clientId,
-          updatedGameState
-        });
+        io.in(roomCode).emit('player-reconnect', updatedGameState);
 
         socket.join(roomCode);
 
@@ -85,10 +82,7 @@ const disconnectPlayerFromGame = async (io, clientId) => {
 
   console.log(clientId, 'disconnected from', roomCode);
 
-  io.in(roomCode).emit('player-disconnect', {
-    clientId,
-    updatedGameState
-  });
+  io.in(roomCode).emit('player-disconnect', updatedGameState);
 };
 
 export { getLatestPlayerActivity, disconnectPlayerFromGame };
