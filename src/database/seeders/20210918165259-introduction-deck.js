@@ -5,7 +5,7 @@ module.exports = {
       'Decks',
       [
         {
-          title: 'Introduction questions for stranges',
+          title: 'Easy questions for strangers',
           createdAt: new Date(),
           updatedAt: new Date()
         }
@@ -66,7 +66,7 @@ module.exports = {
         updatedAt: new Date()
       },
       {
-        question: 'What’s your secret guilty pleasure?',
+        question: 'What’s your guilty pleasure?',
         deckId: deckId,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -85,7 +85,7 @@ module.exports = {
       'Decks',
       {
         userId: null,
-        title: 'Introduction questions for stranges'
+        title: 'Easy questions for strangers'
       },
       {}
     );
