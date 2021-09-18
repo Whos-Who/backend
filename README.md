@@ -17,7 +17,7 @@ Backend repository for the assignment 3
   - [Deployment](#deployment)
   - [Documentation](#documentation)
     - [REST API endpoints](#rest-api-endpoints)
-    - [Socket Events](#socket-events)
+    - [Socket Listeners and Emitters](#socket-listeners-and-emitters)
     - [Redis Key-value mappings](#redis-key-value-mappings)
 
 ## Environment Set up
@@ -82,10 +82,10 @@ To update your local database with the latest seed data, like default decks, run
 
 [REST API](https://cs3216assignment3.docs.apiary.io/)
 
-### Socket Events
+### Socket Listeners and Emitters
 
-[Socket Listeners](docs/Socket.Events.md)
+[Socket Listeners and Emitters](docs/Socket.Events.md)
 
 ### Redis Key-value mappings
 
-[Redis store](docs/Redis.Storage.md)
+[Redis key-value storage](docs/Redis.Storage.md)
