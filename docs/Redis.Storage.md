@@ -2,9 +2,9 @@
 
 Currently, redis storage structure is planned to be as such
 
-```
-Tracking Game State for a room
+## Tracking Game State for a room
 
+```
 room-<roomId>:
   roomCode: string
   phase: enum(lobby,.....)
@@ -17,9 +17,16 @@ room-<roomId>:
   selectedAnswer: string,
   players: map<clientId,PlayerState>
 
-PlayerState is a map of clientId to listed attributes
+```
 
-clientId - {
+## Tracking Player state for a player in a game room
+
+The `players` attribute in side Game State is a map of clientIds to their playe state within the game
+
+PlayerState is a JSON Object with the listed attributes
+
+```
+{
   username: string
   connected: boolean
   score: number
@@ -28,22 +35,24 @@ clientId - {
     isGuessed: boolean
   }
 }
+```
 
+## Tracking questions for a particular game
 
-Tracking questions for a particular game
+```
+questions-<roomId>: List of questions
+```
 
-questions-<roomId>: List / Deque of questions
+## Tracking guessing order for a particular game
 
+```
+guessing-order-<roomId>: List of clientIds
+```
 
-Tracking guessing order for a particular game
+## Track player activity when player joins game, used for reconnecting to gameroom
 
-guessing-order-<roomId>: List / Deque of clientIds
-
-
-Track player activity when player joins game, used for reconnecting to gameroom
-
+```
 player-activity-<clientId>:
     socketId: string
-    roomId: string
-
+    roomCode: string
 ```
