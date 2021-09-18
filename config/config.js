@@ -6,10 +6,12 @@ const DATABASE_URL = process.env.DATABASE_URL;
 module.exports = {
   development: {
     url: DATABASE_URL,
-    dialect: 'postgres'
+    dialect: 'postgres',
+    seederStorage: 'sequelize'
   },
   production: {
     url: DATABASE_URL,
-    dialect: 'postgres'
+    dialect: 'postgres',
+    seederStorage: 'sequelize'
   }
 };
