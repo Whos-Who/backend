@@ -1,5 +1,6 @@
 import { createRoom, joinRoom, leaveRoom, removeRoom } from '../handlers/room';
 import { nanoId } from '../../utils/utils';
+import { updatePlayerActivity, removePlayerActivity } from '../../utils/utils';
 
 const intializeRoomListeners = (socket, io) => {
   // Retrieves from socket query parameters
@@ -14,12 +15,13 @@ const intializeRoomListeners = (socket, io) => {
       if (!username) throw new Error('Missing field for room-create!');
 
       const roomCode = await nanoId();
-      console.log('ROOMCODE:', roomCode);
       const gameState = await createRoom(roomCode, clientId, username);
 
       // Tell client room is created and he can join room
       socket.emit('room-join', gameState);
       socket.join(roomCode);
+
+      await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-room-create', err);
       console.log('create room error occured', err);
@@ -44,6 +46,8 @@ const intializeRoomListeners = (socket, io) => {
       socket.join(roomCode);
       // Tell client room has been found and he can join room
       socket.emit('room-join', gameState);
+
+      await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-room-join', err);
       console.log('join room error occured', err);
@@ -81,6 +85,8 @@ const intializeRoomListeners = (socket, io) => {
         io.in(roomCode).emit('new-host', newHost);
         console.log(newHost, 'has become host!');
       }
+
+      await removePlayerActivity(clientId, socketId);
     } catch (err) {
       socket.emit('error-room-leave', err);
       console.log('leave room occured', err);

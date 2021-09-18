@@ -3,9 +3,15 @@ import { StatusCodes } from 'http-status-codes';
 import createError from 'http-errors';
 import { TOKEN_KEY } from '../const/const';
 import User from '../models/User';
+import { ON_AUTH } from '../const/const';
 
 const verifyToken = async (req, res, next) => {
   try {
+    if (!ON_AUTH) {
+      next();
+      return;
+    }
+
     const token = req.header('x-auth-token');
 
     if (!token) {

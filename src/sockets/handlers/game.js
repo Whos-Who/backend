@@ -1,4 +1,3 @@
-import { SCOREBOARD_PHASE } from '../../const/game';
 import {
   QUESTIONS_PREFIX,
   GUESSING_ORDER_PREFIX,
@@ -7,8 +6,10 @@ import {
 import {
   QUESTION_PHASE,
   TURN_GUESS_PHASE,
-  TURN_REVEAL_PHASE
+  TURN_REVEAL_PHASE,
+  SCOREBOARD_PHASE
 } from '../../const/game';
+import { DEFAULT_EXPIRATION } from '../../database/redis';
 
 import { redisClient } from '../../database/redis';
 import { Mutex } from 'redis-semaphore';
@@ -142,9 +143,25 @@ const checkResult = (gameState, clientId, answer) => {
 };
 
 const getQuestions = async (deckId) => {
+  //if (!deckId) throw new Error("No Deck Id")
+
+  // Foe FE to develop first without deckId
+  if (!deckId) {
+    const questions = [
+      'Question 1',
+      'Question 2',
+      'Question 3',
+      'Question 4',
+      'Question 5',
+      'Question 6',
+      'Question 7',
+      'Question 8'
+    ];
+    return questions;
+  }
   const questionsJson = await Question.findAll({
     where: {
-      deckId
+      deckId: deckId
     },
     attributes: ['question'],
     raw: true
@@ -173,7 +190,7 @@ const updateStateToQuestionPhase = (gameState, nextQuestion, numQuestions) => {
 };
 
 const startGame = async (roomCode, deckId) => {
-  if (!roomCode || !deckId) throw new Error('Missing fields for game start');
+  if (!roomCode) throw new Error('Missing fields for game start');
 
   const questions = await getQuestions(deckId);
   const numQuestions = questions.length;

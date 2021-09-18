@@ -20,7 +20,8 @@
   - [game-player-answer-submission](#game-player-answer-submission)
   - [game-player-match-submission](#game-player-match-submission)
   - [game-next-turn](#game-next-turn)
-- [Player](#player)
+- [Player (Emitters only)](#player-emitters-only)
+-
 
 <br />
 
@@ -304,7 +305,39 @@ socket.on('game-next-turn', (data) => ....)
 
 <br />
 
-## Player
+## Player (Emitters only)
+
+<br />
+
+### player-reconnect
+
+```
+socket.emit('player-reconnect', (payload) => ....)
+```
+
+#### Description
+
+Emitted when a player reconnects to the server and rejoins game while previously in middle of game. It is emitted to all players in the room.
+
+#### Payload
+
+Payload is the updated game state with the player in connected status
+
+<br />
+
+### player-disconnect
+
+```
+socket.emit('player-disconnect', (payload) => ....)
+```
+
+#### Description
+
+Emitted when a player disconnects from server while previously in middle of game. It is emitted to all players in the room.
+
+#### Payload
+
+Payload is the updated game state with the player in disconnected status
 
 <!--
 <br />

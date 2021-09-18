@@ -1,5 +1,8 @@
 import { customAlphabet } from 'nanoid';
+import { redisClient } from '../database/redis';
 import { ROOM_CODE_LENGTH, ROOM_CODE_SYMBOLS } from '../const/game';
+import { PLAYER_ACTIVITY_PREFIX } from '../const/redis';
+import { PLAYER_ACTIVITY_EXPIRATION } from '../database/redis';
 
 // Shuffles and array 'randomly', based on the knuth algorithm
 // Modifies the actual array
@@ -21,4 +24,30 @@ const shuffle = (arr) => {
 
 const nanoId = customAlphabet(ROOM_CODE_SYMBOLS, ROOM_CODE_LENGTH);
 
-export { shuffle, nanoId };
+const updatePlayerActivity = async (clientId, socketId, roomCode) => {
+  const key = `${PLAYER_ACTIVITY_PREFIX}-${clientId}`;
+  const body = {
+    socketId: socketId,
+    roomCode: roomCode
+  };
+  await redisClient.hmset(key, body);
+  redisClient.expire(key, PLAYER_ACTIVITY_EXPIRATION);
+};
+
+const removePlayerActivity = async (clientId) => {
+  const key = `${PLAYER_ACTIVITY_PREFIX}-${clientId}`;
+  await redisClient.del(key);
+};
+
+const getPlayerActivity = async (clientId) => {
+  const key = `${PLAYER_ACTIVITY_PREFIX}-${clientId}`;
+  return await redisClient.hgetall(key);
+};
+
+export {
+  shuffle,
+  nanoId,
+  removePlayerActivity,
+  getPlayerActivity,
+  updatePlayerActivity
+};
