@@ -87,9 +87,7 @@ module.exports = {
         userId: null,
         title: 'Introduction questions for stranges'
       },
-      {
-        returning: true
-      }
+      {}
     );
 
     // Questions will be deleted due to cascade
