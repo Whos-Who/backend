@@ -61,7 +61,7 @@ To update your local database with the latest schemas, run `npx sequelize-cli db
 
 ## Running seed files
 
-To be updated
+To update your local database with the latest seed data, like default decks, run `npx sequelize-cli db:seed:all`
 
 ### Linting, Formatting and CI Check
 
@@ -80,7 +80,7 @@ To be updated
 
 ### REST API endpoints
 
-To be updated
+[REST API](https://cs3216assignment3.docs.apiary.io/)
 
 ### Socket Events
 
