@@ -26,7 +26,7 @@ const intializeGameListeners = (socket, io) => {
       const gameState = await startGame(roomCode, deckId);
 
       // Tell client game has begun and proceed to the question phase
-      io.to(roomCode).emit('game-phase-question', gameState);
+      io.to(roomCode).emit('game-next-phase', gameState);
 
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
@@ -43,7 +43,7 @@ const intializeGameListeners = (socket, io) => {
       const gameState = await switchToQuestionsPhase(roomCode);
 
       // Tell client to proceed to open question and let user answer
-      io.to(roomCode).emit('game-phase-question', gameState);
+      io.to(roomCode).emit('game-next-phase', gameState);
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-next-question', err);
@@ -57,7 +57,7 @@ const intializeGameListeners = (socket, io) => {
 
       const gameState = await endGame(roomCode);
       // Tell client game has ended and bring players back to the lobby
-      io.to(roomCode).emit('game-close', gameState);
+      io.to(roomCode).emit('game-next-phase', gameState);
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-end', err);
@@ -94,7 +94,7 @@ const intializeGameListeners = (socket, io) => {
 
       console.log('SUBMIT MATCH', '- UPDATED GAME STATE', gameState);
 
-      io.to(roomCode).emit('game-phase-turn-reveal', gameState);
+      io.to(roomCode).emit('game-next-phase', gameState);
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-player-match-submission', err);
@@ -107,15 +107,19 @@ const intializeGameListeners = (socket, io) => {
       const { roomCode } = data;
 
       const gameState = await switchToTurnGuessPhase(roomCode, socket, io);
+      const currAnswerer = gameState.currAnswerer;
 
       console.log('NEXT TURN', 'UPDATED  GAME STATE', gameState);
-      io.to(roomCode).emit('game-phase-turn-guess', gameState);
+      io.to(roomCode).emit('game-next-phase', gameState);
 
       // Start async timer
       setTimeout(async () => {
         const gameState = await getAndParseGameState(roomCode);
         // If user did not answer in time, set this
-        if (gameState.gameState != TURN_REVEAL_PHASE) {
+        if (
+          gameState.gameState == TURN_GUESS_PHASE &&
+          gameState.currAnswerer == currAnswerer
+        ) {
           const unansweredGameState = {
             ...gameState,
             phase: TURN_REVEAL_PHASE,
@@ -125,7 +129,7 @@ const intializeGameListeners = (socket, io) => {
 
           await formatAndUpdateGameState(unansweredGameState);
           console.log('TIMES UP!');
-          io.to(roomCode).emit('game-phase-turn-reveal', unansweredGameState);
+          io.to(roomCode).emit('game-next-phase', unansweredGameState);
         }
       }, 30000);
       await updatePlayerActivity(clientId, socketId, roomCode);
