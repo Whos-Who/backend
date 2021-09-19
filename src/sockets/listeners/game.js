@@ -107,6 +107,7 @@ const intializeGameListeners = (socket, io) => {
       const { roomCode } = data;
 
       const gameState = await switchToTurnGuessPhase(roomCode, socket, io);
+      const currAnswerer = gameState.currAnswerer;
 
       console.log('NEXT TURN', 'UPDATED  GAME STATE', gameState);
       io.to(roomCode).emit('game-phase-turn-guess', gameState);
@@ -114,7 +115,6 @@ const intializeGameListeners = (socket, io) => {
       // Start async timer
       setTimeout(async () => {
         const gameState = await getAndParseGameState(roomCode);
-        const currAnswerer = gameState.currAnswerer;
         // If user did not answer in time, set this
         if (
           gameState.phase == TURN_GUESS_PHASE &&
