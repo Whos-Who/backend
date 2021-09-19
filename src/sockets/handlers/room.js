@@ -211,7 +211,7 @@ const joinRoom = async (roomCode, clientId, username) => {
   try {
     gameState = await getAndParseGameState(roomCode);
 
-    if (!usernameExists(gameState.players, username))
+    if (usernameExists(gameState.players, username))
       throw new Error(`Username ${username} already exists!`);
 
     if (!canJoin(gameState, clientId))
