@@ -16,19 +16,25 @@ export const initializeWebSockets = (server) => {
   // Middleware to check if player in game already
   getLatestPlayerActivity(io);
 
-  io.on('connection', (socket) => {
-    // For FE to check if connected
-    console.log(socket.id, 'JOINED');
-
-    // Set up socket listeners for room events
-    intializeRoomListeners(socket, io);
-    intializeGameListeners(socket, io);
-
-    socket.on('disconnect', (reason) => {
+  try {
+    io.on('connection', (socket) => {
+      // For FE to check if connected
       const clientId = socket.handshake.query.clientId;
-      console.log(socket.handshake.query.clientId, 'using', socket.id, 'left');
+      console.log(clientId, 'using', socket.id, 'JOINED');
 
-      disconnectPlayerFromGame(io, clientId);
+      // Set up socket listeners for room events
+      intializeRoomListeners(socket, io);
+      intializeGameListeners(socket, io);
+
+      socket.on('disconnect', (reason) => {
+        const clientId = socket.handshake.query.clientId;
+        console.log(clientId, 'using', socket.id, 'left');
+
+        disconnectPlayerFromGame(io, clientId);
+      });
     });
-  });
+  } catch (err) {
+    console.log('Error occured', err);
+    socket.emit('error', err);
+  }
 };
