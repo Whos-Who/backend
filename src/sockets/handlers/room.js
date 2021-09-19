@@ -131,6 +131,12 @@ const removeRoom = async (gamestate) => {
   await redisClient.del(key);
 };
 
+const roomExists = async (roomCode) => {
+  const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
+
+  return await redisClient.exists(key);
+};
+
 const addUserToRoom = (clientId, username, gameState) => {
   const updatedGameState = {
     ...gameState,
@@ -270,5 +276,6 @@ export {
   leaveRoom,
   removeRoom,
   getAndParseGameState,
-  formatAndUpdateGameState
+  formatAndUpdateGameState,
+  roomExists
 };
