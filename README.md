@@ -14,7 +14,6 @@ Backend repository for the assignment 3
     - [Running migrations](#running-migrations)
   - [Running seed files](#running-seed-files)
     - [Linting, Formatting and CI Check](#linting-formatting-and-ci-check)
-  - [Deployment](#deployment)
   - [Documentation](#documentation)
     - [REST API endpoints](#rest-api-endpoints)
     - [Socket Listeners and Emitters](#socket-listeners-and-emitters)
@@ -70,11 +69,6 @@ To update your local database with the latest seed data, like default decks, run
 3. Code should be auto-formatted on save
 4. ESlint is installed to maintain some code style (used the lowest requirement), which adheres to the Prettier style formatter
 5. CI check enforced just for linting
-
-## Deployment
-
-1. Configured auto deployment when there are changes to main branch
-2. Check environment `assignment-3-web-backend` to check deployment status
 
 ## Documentation
 
