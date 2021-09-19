@@ -114,8 +114,12 @@ const intializeGameListeners = (socket, io) => {
       // Start async timer
       setTimeout(async () => {
         const gameState = await getAndParseGameState(roomCode);
+        const currAnswerer = gameState.currAnswerer;
         // If user did not answer in time, set this
-        if (gameState.gameState != TURN_REVEAL_PHASE) {
+        if (
+          gameState.phase == TURN_GUESS_PHASE &&
+          gameState.currAnswerer == currAnswerer
+        ) {
           const unansweredGameState = {
             ...gameState,
             phase: TURN_REVEAL_PHASE,
@@ -124,9 +128,10 @@ const intializeGameListeners = (socket, io) => {
           };
 
           await formatAndUpdateGameState(unansweredGameState);
-          console.log('TIMES UP!');
+          console.log('TIMES UP! Forcing a switch');
           io.to(roomCode).emit('game-phase-turn-reveal', unansweredGameState);
         }
+        console.log('Timer completed');
       }, 30000);
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
