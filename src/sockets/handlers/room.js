@@ -170,7 +170,7 @@ const pickNewHost = (gameState) => {
   let newHost = null;
 
   for (let [clientId, playerState] in Object.entries(gameState['players'])) {
-    if (gameState != clientId && playerState.connected) {
+    if (gameState.host != clientId && playerState.connected) {
       newHost = clientId;
     }
   }
