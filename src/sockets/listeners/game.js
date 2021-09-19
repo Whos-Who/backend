@@ -10,7 +10,11 @@ import {
   endGame,
   switchToTurnRevealPhase
 } from '../handlers/game';
-import { TURN_GUESS_PHASE, TURN_REVEAL_PHASE } from '../../const/game';
+import {
+  GUESS_TIMER_INTERVAL,
+  TURN_GUESS_PHASE,
+  TURN_REVEAL_PHASE
+} from '../../const/game';
 import { updatePlayerActivity } from '../../utils/utils';
 
 const intializeGameListeners = (socket, io) => {
@@ -131,7 +135,7 @@ const intializeGameListeners = (socket, io) => {
           console.log('TIMES UP!');
           io.to(roomCode).emit('game-next-phase', unansweredGameState);
         }
-      }, 30000);
+      }, GUESS_TIMER_INTERVAL);
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-next-turn', err);
