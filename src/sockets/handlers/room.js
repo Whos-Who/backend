@@ -167,8 +167,15 @@ const removeUserFromRoom = (clientId, gameState) => {
 
 const pickNewHost = (gameState) => {
   // Pick the 1st person json of remaining player as host
-  const newHost = Object.keys(gameState['players'])[0];
-  gameState.host = newHost;
+  let newHost = null;
+
+  for (let [clientId, playerState] in Object.entries(gameState['players'])) {
+    if (gameState != clientId && playerState.connected) {
+      newHost = clientId;
+    }
+  }
+
+  if (!newHost) throw new Error('No new Host!');
 
   return newHost;
 };
@@ -246,7 +253,7 @@ const leaveRoom = async (roomCode, clientId) => {
       updatedGameState.playerCount > 0
     ) {
       newHost = pickNewHost(updatedGameState);
-      updatedGameState['host'] = newHost;
+      updatedGameState.host = newHost;
       console.log('NEW HOST', newHost);
     }
 
