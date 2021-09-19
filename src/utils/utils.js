@@ -30,7 +30,7 @@ const updatePlayerActivity = async (clientId, socketId, roomCode) => {
     socketId: socketId,
     roomCode: roomCode
   };
-  await redisClient.hmset(key, body);
+  await redisClient.hset(key, body);
   redisClient.expire(key, PLAYER_ACTIVITY_EXPIRATION);
 };
 

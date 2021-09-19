@@ -9,7 +9,8 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       question: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false
       },
       deckId: {
         allowNull: false,

@@ -1,4 +1,10 @@
-import { createRoom, joinRoom, leaveRoom, removeRoom } from '../handlers/room';
+import {
+  createRoom,
+  joinRoom,
+  leaveRoom,
+  removeRoom,
+  roomExists
+} from '../handlers/room';
 import { nanoId } from '../../utils/utils';
 import { updatePlayerActivity, removePlayerActivity } from '../../utils/utils';
 
@@ -14,7 +20,12 @@ const intializeRoomListeners = (socket, io) => {
 
       if (!username) throw new Error('Missing field for room-create!');
 
-      const roomCode = await nanoId();
+      let roomCode = await nanoId();
+
+      while (await roomExists(roomCode)) {
+        roomCode = await nanoId();
+      }
+
       const gameState = await createRoom(roomCode, clientId, username);
 
       // Tell client room is created and he can join room

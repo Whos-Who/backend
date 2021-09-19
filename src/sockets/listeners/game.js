@@ -121,8 +121,8 @@ const intializeGameListeners = (socket, io) => {
         const gameState = await getAndParseGameState(roomCode);
         // If user did not answer in time, set this
         if (
-          gameState.phase == TURN_GUESS_PHASE &&
-          gameState.currAnswerer == currAnswerer
+          gameState.phase === TURN_GUESS_PHASE &&
+          gameState.currAnswerer === currAnswerer
         ) {
           const unansweredGameState = {
             ...gameState,

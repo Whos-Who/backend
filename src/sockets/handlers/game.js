@@ -326,7 +326,6 @@ const endTurnGuessingPhase = async (roomCode, gameState, socket, io) => {
 
     return updatedGameState;
   } catch (err) {
-    socket.emit('error-game-scoreboard', err);
     console.log('game score board error occured', err);
     throw err;
   }
