@@ -11,7 +11,7 @@ module.exports = {
           updatedAt: new Date()
         },
         {
-          title: 'We’e Not Really Strangers',
+          title: 'We’re Not Really Strangers',
           createdAt: new Date(),
           updatedAt: new Date()
         }
