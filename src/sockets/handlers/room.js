@@ -57,7 +57,6 @@ const cleanUpGameState = (gameState) => {
 
   let cleanedGameState = cleanGameState(roomCode, hostId);
 
-  console.log(players);
   Object.entries(players).forEach(([clientId, state]) => {
     cleanedGameState = addUserToRoom(
       clientId,
@@ -170,7 +169,6 @@ const pickNewHost = (gameState) => {
   console.log('Selecting new host!');
   let newHost = null;
   for (let [clientId, playerState] of Object.entries(gameState['players'])) {
-    console.log(playerState);
     if (gameState.host != clientId && playerState.connected) {
       newHost = clientId;
     }
