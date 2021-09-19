@@ -175,7 +175,7 @@ const pickNewHost = (gameState) => {
 
 const usernameExists = (players, username) => {
   const matches = Object.values(players).map(
-    (player) => player.username == username
+    (player) => player.username === username
   );
   const result = matches.reduce((total, match) => total || match, false);
 
