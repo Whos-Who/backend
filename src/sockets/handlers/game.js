@@ -322,7 +322,7 @@ const endTurnGuessingPhase = async (roomCode, gameState, socket, io) => {
     // Prepare gameState for next question
 
     console.log('SCOREBOARD', '- UPDATED  GAME STATE', updatedGameState);
-    io.to(roomCode).emit('game-phase-scoreboard', updatedGameState);
+    io.to(roomCode).emit('game-next-phase', updatedGameState);
 
     return updatedGameState;
   } catch (err) {

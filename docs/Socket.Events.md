@@ -154,7 +154,7 @@ Event listener when host of game room decides to start the game. This listener r
 
 **Success**
 
-- Server will emit a `game-phase-question` to the client together with the `gameState` of the intialized game back to the client, with the gamestate in the `QUESTIONS` phase
+- Server will emit a `game-next-phase` to the client together with the `gameState` of the intialized game back to the client, with the gamestate in the `QUESTIONS` phase
 
 **Failure**
 
@@ -186,7 +186,7 @@ Event listener when host of game room requests for next question. This listener 
 
 **Success**
 
-- Server will emit a `game-phase-question` to the client together with the `gameState` of the updated game state back to the client with the gamestate in the `QUESTIONS` phase
+- Server will emit a `game-next-phase` to the client together with the `gameState` of the updated game state back to the client with the gamestate in the `QUESTIONS` phase
 
 **Failure**
 
@@ -212,7 +212,7 @@ Event listener when host of game room requests for next question. This listener 
 
 **Success**
 
-- Server will emit a `game-close` to the client together with the `gameState`, back in the `LOBBY` phase.
+- Server will emit a `game-next-phase` to the client together with the `gameState`, back in the `LOBBY` phase.
 
 **Failure**
 
@@ -268,7 +268,7 @@ Event listener when player makes a guess to match the player to answer. This lis
 
 **Success**
 
-- Server will emit a `game-player-turn-reveal` to the client together with the `gameState` updated to the `TURN_GUESS_REVEAL` phase
+- Server will emit a `game-next-phase` to the client together with the `gameState` updated to the `TURN_GUESS_REVEAL` phase
 
 **Failure**
 
@@ -296,9 +296,9 @@ socket.on('game-next-turn', (data) => ....)
 
 **Success**
 
-- If there is still more than 1 answer left to match, server will emit a `game-phase-turn-guess` to the client to together with the updated gameState to indicate a change in phase to the `TURN_GUESS_PHASE`
+- If there is still more than 1 answer left to match, server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `TURN_GUESS_PHASE`
 
-- If there is 1 or less answers left to guess, the server will emit a `game-phase-scoreboard` to the client to together with the updated gameState to indicate a change in phase to the `SCOREBOARD_PHASE`
+- If there is 1 or less answers left to guess, the server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `SCOREBOARD_PHASE`
 
 **Failure**
 
