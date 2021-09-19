@@ -92,7 +92,7 @@ const disconnectPlayerFromGame = async (io, clientId) => {
   console.log(clientId, 'disconnected from', roomCode);
 
   io.in(roomCode).emit('player-disconnect', updatedGameState);
-  
+
   if (newHost) io.in(roomCode).emit('new-host', newHost);
 };
 

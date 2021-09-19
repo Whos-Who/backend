@@ -167,9 +167,10 @@ const removeUserFromRoom = (clientId, gameState) => {
 
 const pickNewHost = (gameState) => {
   // Pick the 1st person json of remaining player as host
+  console.log('Selecting new host!');
   let newHost = null;
-
-  for (let [clientId, playerState] in Object.entries(gameState['players'])) {
+  for (let [clientId, playerState] of Object.entries(gameState['players'])) {
+    console.log(playerState);
     if (gameState.host != clientId && playerState.connected) {
       newHost = clientId;
     }
