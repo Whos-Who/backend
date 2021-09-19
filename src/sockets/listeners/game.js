@@ -121,7 +121,7 @@ const intializeGameListeners = (socket, io) => {
         const gameState = await getAndParseGameState(roomCode);
         // If user did not answer in time, set this
         if (
-          gameState.gameState == TURN_GUESS_PHASE &&
+          gameState.phase == TURN_GUESS_PHASE &&
           gameState.currAnswerer == currAnswerer
         ) {
           const unansweredGameState = {
@@ -132,9 +132,10 @@ const intializeGameListeners = (socket, io) => {
           };
 
           await formatAndUpdateGameState(unansweredGameState);
-          console.log('TIMES UP!');
+          console.log('TIMES UP! Forcing a switch');
           io.to(roomCode).emit('game-next-phase', unansweredGameState);
         }
+        console.log('Timer completed');
       }, GUESS_TIMER_INTERVAL);
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
