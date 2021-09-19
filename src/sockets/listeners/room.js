@@ -22,7 +22,7 @@ const intializeRoomListeners = (socket, io) => {
 
       let roomCode = await nanoId();
 
-      while (roomExists(roomCode)) {
+      while (await roomExists(roomCode)) {
         roomCode = await nanoId();
       }
 

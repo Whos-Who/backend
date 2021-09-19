@@ -132,7 +132,7 @@ const removeRoom = async (gamestate) => {
 };
 
 const roomExists = async (roomCode) => {
-  const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
+  const key = `${ROOM_PREFIX}-${roomCode}`;
 
   return await redisClient.exists(key);
 };
@@ -204,8 +204,8 @@ const joinRoom = async (roomCode, clientId, username) => {
   try {
     gameState = await getAndParseGameState(roomCode);
 
-    if (!usernameExists(gameState.players, username))
-      throw new Error(`Username ${username} already exists!`);
+    // if (!usernameExists(gameState.players, username))
+    //   throw new Error(`Username ${username} already exists!`);
 
     if (!canJoin(gameState, clientId))
       throw new Error('Unable to join game! Game in progress!');
