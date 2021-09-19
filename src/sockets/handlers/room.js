@@ -115,7 +115,7 @@ const getAndParseGameState = async (roomCode) => {
 const updateGameStateInServer = async (gamestate) => {
   const key = `${ROOM_PREFIX}-${gamestate.roomCode}`;
 
-  await redisClient.hmset(key, gamestate);
+  await redisClient.hset(key, gamestate);
   redisClient.expire(key, DEFAULT_EXPIRATION);
 };
 
