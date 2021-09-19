@@ -1,6 +1,7 @@
 import {
   formatAndUpdateGameState,
-  getAndParseGameState
+  getAndParseGameState,
+  pickNewHost
 } from '../handlers/room';
 import { getPlayerActivity, updatePlayerActivity } from '../../utils/utils';
 
@@ -72,17 +73,27 @@ const disconnectPlayerFromGame = async (io, clientId) => {
   const playerActivity = await getPlayerActivity(clientId);
   const roomCode = playerActivity.roomCode;
 
-  // User was not part of a game
-  if (!Object.keys(playerActivity).length) return;
+  // User was not part of a game or player no longer part of game
+  if (!Object.keys(playerActivity).length || !roomCode) return;
 
   const gameState = await getAndParseGameState(roomCode);
-  const updatedGameState = setPlayerOffline(gameState, clientId);
+
+  let updatedGameState = setPlayerOffline(gameState, clientId);
+  let newHost;
+
+  // IF host is disconnceted player
+  if (updatedGameState.host == clientId) {
+    newHost = pickNewHost(updatedGameState);
+    updatedGameState.host = newHost;
+  }
 
   await formatAndUpdateGameState(updatedGameState);
 
   console.log(clientId, 'disconnected from', roomCode);
 
   io.in(roomCode).emit('player-disconnect', updatedGameState);
+  
+  if (newHost) io.in(roomCode).emit('new-host', newHost);
 };
 
 export { getLatestPlayerActivity, disconnectPlayerFromGame };
