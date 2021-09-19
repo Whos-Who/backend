@@ -15,6 +15,7 @@ const intializeRoomListeners = (socket, io) => {
       if (!username) throw new Error('Missing field for room-create!');
 
       const roomCode = await nanoId();
+
       const gameState = await createRoom(roomCode, clientId, username);
 
       // Tell client room is created and he can join room

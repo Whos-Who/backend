@@ -167,6 +167,15 @@ const pickNewHost = (gameState) => {
   return newHost;
 };
 
+const usernameExists = (players, username) => {
+  const matches = Object.values(players).map(
+    (player) => player.username == username
+  );
+  const result = matches.reduce((total, match) => total || match, false);
+
+  return result;
+};
+
 const createRoom = async (roomCode, clientId, username) => {
   const gameState = intializeGameState(roomCode, clientId, username);
   await formatAndUpdateGameState(gameState);
@@ -188,6 +197,9 @@ const joinRoom = async (roomCode, clientId, username) => {
 
   try {
     gameState = await getAndParseGameState(roomCode);
+
+    if (!usernameExists(gameState.players, username))
+      throw new Error(`Username ${username} already exists!`);
 
     if (!canJoin(gameState, clientId))
       throw new Error('Unable to join game! Game in progress!');
