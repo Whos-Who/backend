@@ -14,10 +14,9 @@ Backend repository for the assignment 3
     - [Running migrations](#running-migrations)
   - [Running seed files](#running-seed-files)
     - [Linting, Formatting and CI Check](#linting-formatting-and-ci-check)
-  - [Deployment](#deployment)
   - [Documentation](#documentation)
     - [REST API endpoints](#rest-api-endpoints)
-    - [Socket Events](#socket-events)
+    - [Socket Listeners and Emitters](#socket-listeners-and-emitters)
     - [Redis Key-value mappings](#redis-key-value-mappings)
 
 ## Environment Set up
@@ -61,7 +60,7 @@ To update your local database with the latest schemas, run `npx sequelize-cli db
 
 ## Running seed files
 
-To be updated
+To update your local database with the latest seed data, like default decks, run `npx sequelize-cli db:seed:all`
 
 ### Linting, Formatting and CI Check
 
@@ -71,21 +70,16 @@ To be updated
 4. ESlint is installed to maintain some code style (used the lowest requirement), which adheres to the Prettier style formatter
 5. CI check enforced just for linting
 
-## Deployment
-
-1. Configured auto deployment when there are changes to main branch
-2. Check environment `assignment-3-web-backend` to check deployment status
-
 ## Documentation
 
 ### REST API endpoints
 
-To be updated
+[REST API](https://cs3216assignment3.docs.apiary.io/)
 
-### Socket Events
+### Socket Listeners and Emitters
 
-[Socket Listeners](docs/Socket.Events.md)
+[Socket Listeners and Emitters](docs/Socket.Events.md)
 
 ### Redis Key-value mappings
 
-[Redis store](docs/Redis.Storage.md)
+[Redis key-value storage](docs/Redis.Storage.md)
