@@ -24,7 +24,7 @@ async function indexDeck(req, res, next) {
   try {
     const userId = req.userId;
     const decks = await Deck.findAll({
-      where: { [Op.or]: [{ userId: userId }, { userId: null }] },
+      where: { [Op.or]: [{ userId: userId || null }, { userId: null }] },
       order: [['id', 'ASC']]
     });
     res.status(StatusCodes.OK).json(decks);
