@@ -96,14 +96,14 @@ const updatePlayerScore = (clientId, players) => {
   return newPlayers;
 };
 
-const updateCorrectGuess = (clientId, players) => {
-  const updatedPlayers = updatePlayerScore(clientId, players);
+const updateCorrectGuess = (guesserId, answerClientId, players) => {
+  const updatedPlayers = updatePlayerScore(guesserId, players);
 
   console.log('UPDATED SCORE', updatedPlayers);
 
-  updatedPlayers[clientId]['currAnswer']['isGuessed'] = true;
+  updatedPlayers[answerClientId]['currAnswer']['isGuessed'] = true;
 
-  console.log('UPDATE IS GUESS', updatedPlayers, clientId);
+  console.log('UPDATE IS GUESS', updatedPlayers, answerClientId);
   return updatedPlayers;
 };
 
@@ -276,7 +276,11 @@ const updateStateWithCorrectGuess = (
     phase: TURN_REVEAL_PHASE,
     selectedPlayerId,
     selectedAnswer,
-    players: updateCorrectGuess(gameState.currAnswerer, gameState.players)
+    players: updateCorrectGuess(
+      gameState.currAnswerer,
+      selectedPlayerId,
+      gameState.players
+    )
   };
 };
 
