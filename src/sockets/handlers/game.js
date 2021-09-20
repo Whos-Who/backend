@@ -80,7 +80,7 @@ const getRemainingAnswers = (players) => {
 };
 
 const updatePlayerScore = (clientId, players) => {
-  const score = getRemainingAnswers(players) - 1;
+  const score = getRemainingAnswers(players);
 
   const newPlayers = {
     ...players
@@ -96,14 +96,14 @@ const updatePlayerScore = (clientId, players) => {
   return newPlayers;
 };
 
-const updateCorrectGuess = (clientId, players) => {
-  const updatedPlayers = updatePlayerScore(clientId, players);
+const updateCorrectGuess = (guesserId, answerClientId, players) => {
+  const updatedPlayers = updatePlayerScore(guesserId, players);
 
   console.log('UPDATED SCORE', updatedPlayers);
 
-  updatedPlayers[clientId]['currAnswer']['isGuessed'] = true;
+  updatedPlayers[answerClientId]['currAnswer']['isGuessed'] = true;
 
-  console.log('UPDATE IS GUESS', updatedPlayers, clientId);
+  console.log('UPDATE IS GUESS', updatedPlayers, answerClientId);
   return updatedPlayers;
 };
 
@@ -276,7 +276,11 @@ const updateStateWithCorrectGuess = (
     phase: TURN_REVEAL_PHASE,
     selectedPlayerId,
     selectedAnswer,
-    players: updateCorrectGuess(gameState.currAnswerer, gameState.players)
+    players: updateCorrectGuess(
+      gameState.currAnswerer,
+      selectedPlayerId,
+      gameState.players
+    )
   };
 };
 
@@ -335,7 +339,7 @@ const switchToTurnGuessPhase = async (roomCode, socket, io) => {
   const gameState = await getAndParseGameState(roomCode);
 
   // If no more turns left, should bring to scoreboard
-  if (getRemainingAnswers(gameState.players) <= 1)
+  if (getRemainingAnswers(gameState.players) <= 0)
     return await endTurnGuessingPhase(roomCode, gameState, socket, io);
 
   const nextGuesser = await getNextGuesser(roomCode);

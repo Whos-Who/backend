@@ -37,6 +37,7 @@ I would also recommend that you set up the Backend repository locally to test th
 
 - `POST /reset` to clear all the game states in your local Redis
 - `DELETE /reset/:roomid` to clear all game state related to `roomid`
+- `DELETE /reset/player/:clientId` to clear all player activity related to player with `clientId`
 
 <br />
 

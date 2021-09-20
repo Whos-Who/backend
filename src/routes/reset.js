@@ -5,5 +5,6 @@ const router = Router();
 
 router.post('/', resetController.resetFunc);
 router.delete('/:id', resetController.destroyRoomFunc);
+router.delete('/player/:id', resetController.destroyPlayerFunc);
 
 export default router;
