@@ -80,7 +80,7 @@ const getRemainingAnswers = (players) => {
 };
 
 const updatePlayerScore = (clientId, players) => {
-  const score = getRemainingAnswers(players) - 1;
+  const score = getRemainingAnswers(players);
 
   const newPlayers = {
     ...players
@@ -335,7 +335,7 @@ const switchToTurnGuessPhase = async (roomCode, socket, io) => {
   const gameState = await getAndParseGameState(roomCode);
 
   // If no more turns left, should bring to scoreboard
-  if (getRemainingAnswers(gameState.players) <= 1)
+  if (getRemainingAnswers(gameState.players) <= 0)
     return await endTurnGuessingPhase(roomCode, gameState, socket, io);
 
   const nextGuesser = await getNextGuesser(roomCode);
