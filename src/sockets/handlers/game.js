@@ -326,25 +326,27 @@ const getPlayerAnswer = (clientId, gameState) => {
   return gameState['players'][clientId]['currAnswer']['value'];
 };
 
-const forceTurnRevealPhase = async (nextGuesser, roomCode, io) => {
-  const gameState = await getAndParseGameState(roomCode);
+const forceTurnRevealPhase = (nextGuesser, roomCode, io) => {
+  return async () => {
+    const gameState = await getAndParseGameState(roomCode);
 
-  if (
-    gameState.phase === TURN_GUESS_PHASE &&
-    gameState.currAnswerer === nextGuesser
-  ) {
-    const unansweredGameState = {
-      ...gameState,
-      phase: TURN_REVEAL_PHASE,
-      selectedPlayerId: '',
-      selectedAnswer: ''
-    };
+    if (
+      gameState.phase === TURN_GUESS_PHASE &&
+      gameState.currAnswerer === nextGuesser
+    ) {
+      const unansweredGameState = {
+        ...gameState,
+        phase: TURN_REVEAL_PHASE,
+        selectedPlayerId: '',
+        selectedAnswer: ''
+      };
 
-    await formatAndUpdateGameState(unansweredGameState);
-    console.log('TIMES UP! Forcing a switch');
-    io.to(roomCode).emit('game-next-phase', unansweredGameState);
-  }
-  console.log('Timer completed');
+      await formatAndUpdateGameState(unansweredGameState);
+      console.log('TIMES UP! Forcing a switch');
+      io.to(roomCode).emit('game-next-phase', unansweredGameState);
+    }
+    console.log('Timer completed');
+  };
 };
 
 const endTurnRevealPhase = async (roomCode) => {
@@ -352,14 +354,13 @@ const endTurnRevealPhase = async (roomCode) => {
   const gameState = await getAndParseGameState(roomCode);
   const numRemainingAns = getRemainingAnswers(gameState.players);
 
-  const nextGuesser = await getNextGuesser(roomCode);
-
+  const nextGuesser = await getNextGuesser(roomCode);;
   let updatedGameState;
 
   if (numRemainingAns == 1 && !playerAnswerIsGuessed(nextGuesser, gameState)) {
     // Edge case where only answer left belongs to currGuesser , award 1 point and remain in turn reveal
-    const selectedAnswer = getPlayerAnswer(nextGuesser);
-
+    const selectedAnswer = getPlayerAnswer(nextGuesser, gameState);
+    gameState.currAnswerer = nextGuesser;
     updatedGameState = updateStateWithCorrectGuess(
       gameState,
       nextGuesser,
@@ -373,7 +374,11 @@ const endTurnRevealPhase = async (roomCode) => {
   } else if (numRemainingAns <= 0) {
     // If no more turns left, should bring to scoreboard
     updatedGameState = switchToScoreboardPhase(gameState);
-    console.log('SCOREBOARD', '- UPDATED  GAME STATE', updatedGameState);
+    console.log(
+      'NO MORE QUESTIONS, BRINGING TO SCOREBOARD',
+      '- UPDATED  GAME STATE',
+      updatedGameState
+    );
   } else {
     // Stay on turnGuessPhase, with nextGuesser
     updatedGameState = {

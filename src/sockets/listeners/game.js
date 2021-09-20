@@ -68,6 +68,8 @@ const intializeGameListeners = (socket, io) => {
 
       const gameState = await addPlayerAnswer(roomCode, clientId, answer);
 
+      console.log(clientId, 'SUBMIT ANSWER', answer);
+
       io.to(roomCode).emit('game-player-ready', {
         gameState,
         readyClientId: clientId
