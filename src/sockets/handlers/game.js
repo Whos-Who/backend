@@ -318,42 +318,74 @@ const switchToTurnRevealPhase = async (
   return updatedGameState;
 };
 
-const endTurnGuessingPhase = async (roomCode, gameState, socket, io) => {
-  try {
-    const updatedGameState = switchToScoreboardPhase(gameState);
-
-    await formatAndUpdateGameState(updatedGameState);
-    // Prepare gameState for next question
-
-    console.log('SCOREBOARD', '- UPDATED  GAME STATE', updatedGameState);
-    io.to(roomCode).emit('game-next-phase', updatedGameState);
-
-    return updatedGameState;
-  } catch (err) {
-    console.log('game score board error occured', err);
-    throw err;
-  }
+const playerAnswerIsGuessed = (clientId, gameState) => {
+  return gameState['players'][clientId]['currAnswer']['isGuessed'];
 };
 
-const switchToTurnGuessPhase = async (roomCode, socket, io) => {
+const getPlayerAnswer = (clientId, gameState) => {
+  return gameState['players'][clientId]['currAnswer']['value'];
+};
+
+const forceTurnRevealPhase = async (nextGuesser, roomCode, io) => {
   const gameState = await getAndParseGameState(roomCode);
 
-  // If no more turns left, should bring to scoreboard
-  if (getRemainingAnswers(gameState.players) <= 0)
-    return await endTurnGuessingPhase(roomCode, gameState, socket, io);
+  if (
+    gameState.phase === TURN_GUESS_PHASE &&
+    gameState.currAnswerer === nextGuesser
+  ) {
+    const unansweredGameState = {
+      ...gameState,
+      phase: TURN_REVEAL_PHASE,
+      selectedPlayerId: '',
+      selectedAnswer: ''
+    };
+
+    await formatAndUpdateGameState(unansweredGameState);
+    console.log('TIMES UP! Forcing a switch');
+    io.to(roomCode).emit('game-next-phase', unansweredGameState);
+  }
+  console.log('Timer completed');
+};
+
+const endTurnRevealPhase = async (roomCode) => {
+  console.log('ENDING TURN REVEAL');
+  const gameState = await getAndParseGameState(roomCode);
+  const numRemainingAns = getRemainingAnswers(gameState.players);
 
   const nextGuesser = await getNextGuesser(roomCode);
 
-  // Stay on turnGuessPhase, with nextGuesser
-  const updatedGameState = {
-    ...gameState,
-    phase: TURN_GUESS_PHASE,
-    currAnswerer: nextGuesser
-  };
+  let updatedGameState;
 
+  if (numRemainingAns == 1 && !playerAnswerIsGuessed(nextGuesser, gameState)) {
+    // Edge case where only answer left belongs to currGuesser , award 1 point and remain in turn reveal
+    const selectedAnswer = getPlayerAnswer(nextGuesser);
+
+    updatedGameState = updateStateWithCorrectGuess(
+      gameState,
+      nextGuesser,
+      selectedAnswer
+    );
+    console.log(
+      'LAST ANSWER BELONGS TO GUESSER',
+      '- UPDATED  GAME STATE',
+      updatedGameState
+    );
+  } else if (numRemainingAns <= 0) {
+    // If no more turns left, should bring to scoreboard
+    updatedGameState = switchToScoreboardPhase(gameState);
+    console.log('SCOREBOARD', '- UPDATED  GAME STATE', updatedGameState);
+  } else {
+    // Stay on turnGuessPhase, with nextGuesser
+    updatedGameState = {
+      ...gameState,
+      phase: TURN_GUESS_PHASE,
+      currAnswerer: nextGuesser
+    };
+    console.log('NEXT TURN', 'UPDATED  GAME STATE', updatedGameState);
+  }
+
+  // Start async timer
   await formatAndUpdateGameState(updatedGameState);
-
-  console.log('NEXT TURN', 'UPDATED  GAME STATE', updatedGameState);
 
   return updatedGameState;
 };
@@ -382,17 +414,6 @@ const addPlayerAnswer = async (roomCode, playerId, answer) => {
     await mutex.release();
   }
 
-  console.log('SUBMIT ANSWER', '- UPDATED GAME STATE', gameState);
-  console.log(
-    'NEW ANSWER',
-    updatedGameState['players'][playerId]['currAnswer']
-  );
-  console.log('UPDATED ANSWERS');
-  Object.keys(updatedGameState['players']).forEach((clientId) => {
-    const ans = updatedGameState['players'][clientId]['currAnswer']['value'];
-    console.log('ClientID:', clientId, 'ANSWER', ans);
-  });
-
   return updatedGameState;
 };
 
@@ -411,6 +432,7 @@ export {
   endGame,
   switchToQuestionsPhase,
   switchToTurnRevealPhase,
-  switchToTurnGuessPhase,
-  addPlayerAnswer
+  endTurnRevealPhase,
+  addPlayerAnswer,
+  forceTurnRevealPhase
 };
