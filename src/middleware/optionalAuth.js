@@ -14,10 +14,8 @@ const verifyToken = async (req, res, next) => {
     const token = req.header('x-auth-token');
 
     if (!token) {
-      throw createError(
-        StatusCodes.UNAUTHORIZED,
-        'Token is required for authentication!'
-      );
+      next();
+      return;
     }
 
     try {
