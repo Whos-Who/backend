@@ -297,9 +297,11 @@ socket.on('game-next-turn', (data) => ....)
 
 **Success**
 
-- If there is still more than 1 answer left to match, server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `TURN_GUESS_PHASE`
+- If there is 1 answer left and the answer belongs to the current guesser, server will emit a `game-next-phase` to the client to together with the updated `gameState` to indicate a change in phase to the `TURN_REVEAL_PHASE`
 
-- If there is 1 or less answers left to guess, the server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `SCOREBOARD_PHASE`
+- If there is 1 ore more answer left to match, server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `TURN_GUESS_PHASE`
+
+- If there is 0 answers left to guess, the server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `SCOREBOARD_PHASE`
 
 **Failure**
 
