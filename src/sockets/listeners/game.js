@@ -104,6 +104,7 @@ const intializeGameListeners = (socket, io) => {
       const { roomCode } = data;
 
       const gameState = await endTurnRevealPhase(roomCode);
+      const nextGuesser = gameState.currAnswerer;
 
       console.log('NEXT TURN', 'UPDATED  GAME STATE', gameState);
       io.to(roomCode).emit('game-next-phase', gameState);
