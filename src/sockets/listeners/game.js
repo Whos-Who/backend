@@ -1,20 +1,13 @@
 import {
-  getAndParseGameState,
-  formatAndUpdateGameState
-} from '../handlers/room';
-import {
   addPlayerAnswer,
   startGame,
   switchToQuestionsPhase,
-  switchToTurnGuessPhase,
+  endTurnRevealPhase,
   endGame,
-  switchToTurnRevealPhase
+  switchToTurnRevealPhase,
+  forceTurnRevealPhase
 } from '../handlers/game';
-import {
-  GUESS_TIMER_INTERVAL,
-  TURN_GUESS_PHASE,
-  TURN_REVEAL_PHASE
-} from '../../const/game';
+import { GUESS_TIMER_INTERVAL, TURN_GUESS_PHASE } from '../../const/game';
 import { updatePlayerActivity } from '../../utils/utils';
 
 const intializeGameListeners = (socket, io) => {
@@ -75,6 +68,8 @@ const intializeGameListeners = (socket, io) => {
 
       const gameState = await addPlayerAnswer(roomCode, clientId, answer);
 
+      console.log(clientId, 'SUBMIT ANSWER', answer);
+
       io.to(roomCode).emit('game-player-ready', {
         gameState,
         readyClientId: clientId
@@ -110,33 +105,19 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode } = data;
 
-      const gameState = await switchToTurnGuessPhase(roomCode, socket, io);
-      const currAnswerer = gameState.currAnswerer;
+      const gameState = await endTurnRevealPhase(roomCode);
+      const nextGuesser = gameState.currAnswerer;
 
       console.log('NEXT TURN', 'UPDATED  GAME STATE', gameState);
       io.to(roomCode).emit('game-next-phase', gameState);
 
-      // Start async timer
-      setTimeout(async () => {
-        const gameState = await getAndParseGameState(roomCode);
-        // If user did not answer in time, set this
-        if (
-          gameState.phase === TURN_GUESS_PHASE &&
-          gameState.currAnswerer === currAnswerer
-        ) {
-          const unansweredGameState = {
-            ...gameState,
-            phase: TURN_REVEAL_PHASE,
-            selectedPlayerId: '',
-            selectedAnswer: ''
-          };
-
-          await formatAndUpdateGameState(unansweredGameState);
-          console.log('TIMES UP! Forcing a switch');
-          io.to(roomCode).emit('game-next-phase', unansweredGameState);
-        }
-        console.log('Timer completed');
-      }, GUESS_TIMER_INTERVAL);
+      // If gamestate is in guessing phase, start timer
+      if (gameState.phase == TURN_GUESS_PHASE) {
+        setTimeout(
+          forceTurnRevealPhase(nextGuesser, roomCode, io),
+          GUESS_TIMER_INTERVAL
+        );
+      }
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-next-turn', err);

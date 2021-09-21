@@ -93,7 +93,7 @@ Event listener that will respond when client decides to join a room, this listen
 **Success**
 
 - Server will emit a `room-join` to the client together with the `gameState` back to the client, indicating that the client can join the room.
-- Server will emit a `user-join` to all clients in room with `roomCode` together with the updated Game State with the newly joined player
+- Server will emit a `user-join` to all clients in room with `roomCode` together with the updated Game State with the newly joined player `clientId`.
 
 **Failure**
 
@@ -120,11 +120,11 @@ Event listener that will respond when client decides to leave a room, this liste
 
 **Success**
 
-- Server will emit a `room-leave` to the client together with the `gameState` back to the client, indicating that the client can join the room.
+- Server will emit a `room-leave` back to the client, indicating that the client can leave the room.
 
-- Server will also emit a `user-leave` event to announce to the all clients in the room which user had left. Response is JSON object `gameState`, representing the updated gameState
+- Server will also emit a `user-leave` event to announce to the all clients in the room which user had left. Response is JSON object `gameState`, representing the updated gameState and `clientId`, the clientId of the user who left the room.
 
-- If the previous host left, the server will emit a `new-host` event to announce who is the new host. Response is `clientId` - the clientId of user who left.
+- If the previous host left, the server will emit a `new-host` event to announce who is the new host. Response is the clientId of user who left.
 
 **Failure**
 
@@ -286,8 +286,7 @@ socket.on('game-next-turn', (data) => ....)
 #### Description
 
 - Event listener when for when the game goes to the next turn and guesser. This listener require 1 attribute `roomCode`.
-- An async timer of 30 seconds will also be fired, in which if the current game state is not switched to
-  the `TURN_REVEAL_PHASE`, it will send a `game-phase-turn-reveal` event to all clients to force a change to that phase
+- An async timer of 30 seconds will also be fired, in which if the current game state is still in the `TURN_GUESS` phase, it will send a `game-next-phase` event to all clients to force a change to that phase.
 
 #### Required Payload
 
@@ -297,9 +296,11 @@ socket.on('game-next-turn', (data) => ....)
 
 **Success**
 
-- If there is still more than 1 answer left to match, server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `TURN_GUESS_PHASE`
+- If there is 1 answer left and the answer belongs to the current guesser, server will emit a `game-next-phase` to the client to together with the updated `gameState` to indicate a change in phase to the `TURN_REVEAL_PHASE`.
 
-- If there is 1 or less answers left to guess, the server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `SCOREBOARD_PHASE`
+- If there is 1 or more answer left to match, server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `TURN_GUESS_PHASE`.
+
+- If there is 0 answers left to guess, the server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `SCOREBOARD_PHASE`.
 
 **Failure**
 
