@@ -3,6 +3,6 @@ import * as roomController from '../controllers/room';
 
 const router = Router();
 
-router.head('/', roomController.checkRoomExistFunc);
+router.head('/:roomCode', roomController.checkRoomExistFunc);
 
 export default router;
