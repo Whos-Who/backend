@@ -43,7 +43,7 @@ const guessingOrderExists = async (roomCode) => {
 
 const deleteGuessingOrder = async (roomCode) => {
   const key = `${GUESSING_ORDER_PREFIX}-${roomCode}`;
-  return await redisClient.del(key);
+  await redisClient.del(key);
 };
 
 const addGuessingOrder = async (roomCode, players) => {
