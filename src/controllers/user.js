@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes';
-import createError from 'http-errors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { TOKEN_KEY } from '../const/const';
@@ -10,7 +9,9 @@ async function login(req, res, next) {
     const { email, password } = req.body;
 
     if (!(email && password)) {
-      throw createError(StatusCodes.BAD_REQUEST, 'All inputs are required!');
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send('All inputs are required!');
     }
 
     const user = await User.findOne({
@@ -20,7 +21,7 @@ async function login(req, res, next) {
     });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw createError(StatusCodes.UNAUTHORIZED, 'Invalid credentials!');
+      return res.status(StatusCodes.UNAUTHORIZED).send('Invalid credientials!');
     }
 
     const payload = {
@@ -46,7 +47,9 @@ async function register(req, res, next) {
     const { username, email, password } = req.body;
 
     if (!(username && email && password)) {
-      throw createError(StatusCodes.BAD_REQUEST, 'All inputs are required!');
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send('All inputs are required!');
     }
 
     const oldUser = await User.findOne({
@@ -56,7 +59,7 @@ async function register(req, res, next) {
     });
 
     if (oldUser) {
-      throw createError(StatusCodes.CONFLICT, 'User already exists!');
+      return res.status(StatusCodes.CONFLICT).send('User already exists!');
     }
 
     const encryptedPassword = await bcrypt.hash(password, 10);
@@ -86,7 +89,7 @@ async function retrieveUser(req, res, next) {
   try {
     const user = await User.findByPk(req.params.id);
     if (user === null) {
-      throw createError(StatusCodes.NOT_FOUND, 'User not found!');
+      return res.status(StatusCodes.NOT_FOUND).send('User not found!');
     }
     req.user = user;
     next();

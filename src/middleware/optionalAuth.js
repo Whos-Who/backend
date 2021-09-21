@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
-import createError from 'http-errors';
 import { TOKEN_KEY } from '../const/const';
 import { ON_AUTH } from '../const/const';
 
@@ -22,7 +21,7 @@ const verifyToken = async (req, res, next) => {
       const decoded = jwt.verify(token, TOKEN_KEY);
       req.userId = decoded.userId;
     } catch (err) {
-      throw createError(StatusCodes.UNAUTHORIZED, 'Invalid token!');
+      return res.status(StatusCodes.UNAUTHORIZED).send('Invalid token!');
     }
     next();
   } catch (err) {
