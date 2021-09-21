@@ -34,8 +34,22 @@ const addQuestions = async (roomCode, questions) => {
   redisClient.expire(key, DEFAULT_EXPIRATION);
 };
 
+const guessingOrderExists = async (roomCode) => {
+  console.log('Guessing order already exists');
+
+  const key = `${GUESSING_ORDER_PREFIX}-${roomCode}`;
+  return await redisClient.exists(key);
+};
+
+const deleteGuessingOrder = async (roomCode) => {
+  const key = `${GUESSING_ORDER_PREFIX}-${roomCode}`;
+  return await redisClient.del(key);
+};
+
 const addGuessingOrder = async (roomCode, players) => {
   const key = `${GUESSING_ORDER_PREFIX}-${roomCode}`;
+
+  if (await guessingOrderExists(roomCode)) await deleteGuessingOrder(roomCode);
 
   // First element in array is treated as the list key in Redis
   players.unshift(key);
@@ -354,7 +368,7 @@ const endTurnRevealPhase = async (roomCode) => {
   const gameState = await getAndParseGameState(roomCode);
   const numRemainingAns = getRemainingAnswers(gameState.players);
 
-  const nextGuesser = await getNextGuesser(roomCode);;
+  const nextGuesser = await getNextGuesser(roomCode);
   let updatedGameState;
 
   if (numRemainingAns == 1 && !playerAnswerIsGuessed(nextGuesser, gameState)) {
