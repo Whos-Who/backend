@@ -1,13 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
 
-import createError from 'http-errors';
 import Question from '../models/Question';
 
 async function retrieveQuestion(req, res, next) {
   try {
     const question = await Question.findByPk(req.params.id);
     if (question === null) {
-      throw createError(StatusCodes.NOT_FOUND, 'Question not found!');
+      return res.status(StatusCodes.NOT_FOUND).send('Question not found!');
     }
     req.question = question;
     next();

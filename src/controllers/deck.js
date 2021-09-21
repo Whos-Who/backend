@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { Op } from 'sequelize';
 
-import createError from 'http-errors';
 import Deck from '../models/Deck';
 import Question from '../models/Question';
 
@@ -11,7 +10,7 @@ async function retrieveDeck(req, res, next) {
       include: Question
     });
     if (deck === null) {
-      throw createError(StatusCodes.NOT_FOUND, 'Deck not found!');
+      return res.status(StatusCodes.NOT_FOUND).send('Deck not found!');
     }
     req.deck = deck;
     next();
