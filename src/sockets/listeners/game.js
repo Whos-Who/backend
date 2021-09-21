@@ -87,8 +87,11 @@ const intializeGameListeners = (socket, io) => {
     try {
       const { roomCode, selectedPlayerId, selectedAnswer } = data;
       const roomTimer = roomToTimerMap[roomCode];
+      console.log('Obtained timer', roomTimer);
+
       clearTimeout(roomTimer);
-      delete roomTimer[roomCode];
+      delete roomToTimerMap[roomCode];
+      console.log('Timer Map', roomToTimerMap);
 
       const gameState = await switchToTurnRevealPhase(
         roomCode,
@@ -123,6 +126,7 @@ const intializeGameListeners = (socket, io) => {
           GUESS_TIMER_INTERVAL
         );
         roomToTimerMap[roomCode] = timer;
+        console.log('Timer Map', roomToTimerMap);
       }
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
