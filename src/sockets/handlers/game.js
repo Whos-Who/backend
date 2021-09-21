@@ -344,16 +344,21 @@ const forceTurnRevealPhase = (nextGuesser, roomCode, io) => {
   return async () => {
     const gameState = await getAndParseGameState(roomCode);
 
-    const unansweredGameState = {
-      ...gameState,
-      phase: TURN_REVEAL_PHASE,
-      selectedPlayerId: '',
-      selectedAnswer: ''
-    };
+    if (
+      gameState.phase === TURN_GUESS_PHASE &&
+      gameState.currAnswerer === nextGuesser
+    ) {
+      const unansweredGameState = {
+        ...gameState,
+        phase: TURN_REVEAL_PHASE,
+        selectedPlayerId: '',
+        selectedAnswer: ''
+      };
 
-    await formatAndUpdateGameState(unansweredGameState);
-    console.log('TIMES UP! Forcing a switch');
-    io.to(roomCode).emit('game-next-phase', unansweredGameState);
+      await formatAndUpdateGameState(unansweredGameState);
+      console.log('TIMES UP! Forcing a switch');
+      io.to(roomCode).emit('game-next-phase', unansweredGameState);
+    }
     console.log('Timer completed');
   };
 };
