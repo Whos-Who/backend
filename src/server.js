@@ -11,6 +11,7 @@ import users from './routes/users';
 import decks from './routes/decks';
 import questions from './routes/questions';
 import reset from './routes/reset';
+import rooms from './routes/rooms';
 
 const app = express();
 app.use(cors());
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
 app.use('/', users);
 app.use('/decks', decks);
 app.use('/questions', questions);
+app.use('/rooms', rooms);
 
 if (NODE_ENV === 'development') {
   app.use('/reset', reset);
