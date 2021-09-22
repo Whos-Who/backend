@@ -22,7 +22,7 @@ room-<roomCode>:
   questionsLeft: number,
   selectedPlayerId: string,
   selectedAnswer: string,
-  players: map<clientId,PlayerState>
+  players: map<string,PlayerState>
 ```
 
 ### Description of data
