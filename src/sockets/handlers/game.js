@@ -363,12 +363,21 @@ const forceTurnRevealPhase = (nextGuesser, roomCode, io) => {
   };
 };
 
+const isConnected = (gameState, clientId) => {
+  return gameState['players'][clientId][connected];
+};
+
 const endTurnRevealPhase = async (roomCode) => {
   console.log('ENDING TURN REVEAL');
   const gameState = await getAndParseGameState(roomCode);
   const numRemainingAns = getRemainingAnswers(gameState.players);
 
-  const nextGuesser = await getNextGuesser(roomCode);
+  let nextGuesser = await getNextGuesser(roomCode);
+
+  while (!isConnected(gameState, nextGuesser)) {
+    nextGuesser = await getNextGuesser(roomCode);
+  }
+
   let updatedGameState;
 
   if (numRemainingAns == 1 && !playerAnswerIsGuessed(nextGuesser, gameState)) {
