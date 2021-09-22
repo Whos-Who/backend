@@ -14,7 +14,7 @@ The key-value pairings for the game state in Redis are as such:
 ```
 room-<roomCode>:
   roomCode: string
-  phase: string
+  phase: enum
   host: string
   currQuestion: string
   currAnswerer: string
