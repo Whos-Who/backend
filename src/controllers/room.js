@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { redisClient } from '../database/redis';
 import { ROOM_PREFIX } from '../const/redis';
 
-async function retrieveRoomStatus(req, res, next) {
+async function retrieveRoom(req, res, next) {
   try {
     const roomCode = req.params.roomCode;
     const exists = await redisClient.exists(`${ROOM_PREFIX}-${roomCode}`);
@@ -16,4 +16,4 @@ async function retrieveRoomStatus(req, res, next) {
   }
 }
 
-export const retrieveRoomStatusFunc = [retrieveRoomStatus];
+export const showRoomFunc = [retrieveRoom];
