@@ -68,7 +68,7 @@ Event listener that will respond when client decides to create a room, this list
 
 **Failure**
 
-- Server will emit a `error-room-create` to the client, together with the error message `err`, indicating an error occured.
+- Server will emit a `error-room-create` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -97,7 +97,7 @@ Event listener that will respond when client decides to join a room, this listen
 
 **Failure**
 
-- Server will emit a `error-room-join` to the client, together with the error message `err`, indicating an error occured.
+- Server will emit a `error-room-join` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -128,7 +128,7 @@ Event listener that will respond when client decides to leave a room, this liste
 
 **Failure**
 
-- Server will emit a `error-room-leave` to the client, together with the error message `err`, indicating an error occured.
+- Server will emit a `error-room-leave` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -159,9 +159,8 @@ Event listener when host of game room decides to start the game. This listener r
 
 **Failure**
 
-- Server will emit a `error-game-start` to the client, together with the error message `err`, indicating an error occured.
-
-<br />
+- Server will emit a `error-game-start` to the client, together with the error message, indicating an error occured.
+  <br />
 
 ### game-next-question
 
@@ -191,7 +190,7 @@ Event listener when host of game room requests for next question. This listener 
 
 **Failure**
 
-- Server will emit a `error-game-next-question` to the client, together with the error message `err`, indicating an error occured.
+- Server will emit a `error-game-next-question` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -217,7 +216,7 @@ Event listener when host of game room requests for next question. This listener 
 
 **Failure**
 
-- Server will emit a `error-game-end` to the client, together with the error message `err`, indicating an error occured.
+- Server will emit a `error-game-end` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -245,7 +244,7 @@ Event listener when player answers the question. This listener require 2 attribu
 
 **Failure**
 
-- Server will emit a `error-game-player-answer-submission` to the client, together with the error message `err`, indicating an error occured
+- Server will emit a `error-game-player-answer-submission` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -273,7 +272,7 @@ Event listener when player makes a guess to match the player to answer. This lis
 
 **Failure**
 
-- Server will emit a `error-game-player-match-submission` to the client, together with the error message `err`, indicating an error occured
+- Server will emit a `error-game-player-match-submission` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -304,7 +303,7 @@ socket.on('game-next-turn', (data) => ....)
 
 **Failure**
 
-- Server will emit a `error-game-next-turn` to the client, together with the error message `err`, indicating an error occured
+- Server will emit a `error-game-next-turn` to the client, together with the error message, indicating an error occured.
 
 <br />
 

@@ -29,7 +29,7 @@ const intializeGameListeners = (socket, io) => {
 
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
-      socket.emit('error-game-start', err);
+      socket.emit('error-game-start', err.message);
       console.log('game start error occured', err);
     }
   });
@@ -45,7 +45,7 @@ const intializeGameListeners = (socket, io) => {
       io.to(roomCode).emit('game-next-phase', gameState);
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
-      socket.emit('error-game-next-question', err);
+      socket.emit('error-game-next-question', err.message);
       console.log('game next question error occured', err);
     }
   });
@@ -59,7 +59,7 @@ const intializeGameListeners = (socket, io) => {
       io.to(roomCode).emit('game-next-phase', gameState);
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
-      socket.emit('error-game-end', err);
+      socket.emit('error-game-end', err.message);
       console.log('game end error occured', err);
     }
   });
@@ -78,7 +78,7 @@ const intializeGameListeners = (socket, io) => {
       });
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
-      socket.emit('error-game-player-answer-submission', err);
+      socket.emit('error-game-player-answer-submission', err.message);
       console.log('game player answer submission error occured', err);
     }
   });
@@ -104,7 +104,7 @@ const intializeGameListeners = (socket, io) => {
       io.to(roomCode).emit('game-next-phase', gameState);
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
-      socket.emit('error-game-player-match-submission', err);
+      socket.emit('error-game-player-match-submission', err.message);
       console.log('game player match submission error occured', err);
     }
   });
@@ -130,7 +130,7 @@ const intializeGameListeners = (socket, io) => {
       }
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
-      socket.emit('error-game-next-turn', err);
+      socket.emit('error-game-next-turn', err.message);
       console.log('game next turn error occured', err);
     }
   });
