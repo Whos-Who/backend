@@ -364,7 +364,7 @@ const forceTurnRevealPhase = (nextGuesser, roomCode, io) => {
 };
 
 const isConnected = (gameState, clientId) => {
-  return gameState['players'][clientId][connected];
+  return gameState['players'][clientId]['connected'];
 };
 
 const endTurnRevealPhase = async (roomCode) => {
