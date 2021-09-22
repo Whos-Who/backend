@@ -34,7 +34,7 @@ const intializeRoomListeners = (socket, io) => {
 
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
-      socket.emit('error-room-create', err);
+      socket.emit('error-room-create', err.message);
       console.log('create room error occured', err);
     }
   });
@@ -60,7 +60,7 @@ const intializeRoomListeners = (socket, io) => {
 
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
-      socket.emit('error-room-join', err);
+      socket.emit('error-room-join', err.message);
       console.log('join room error occured', err);
     }
   });
@@ -99,7 +99,7 @@ const intializeRoomListeners = (socket, io) => {
 
       await removePlayerActivity(clientId, socketId);
     } catch (err) {
-      socket.emit('error-room-leave', err);
+      socket.emit('error-room-leave', err.message);
       console.log('leave room occured', err);
     }
   });
