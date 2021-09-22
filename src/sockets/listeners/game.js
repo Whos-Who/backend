@@ -10,6 +10,8 @@ import {
 import { GUESS_TIMER_INTERVAL, TURN_GUESS_PHASE } from '../../const/game';
 import { updatePlayerActivity } from '../../utils/utils';
 
+const roomToTimerMap = {};
+
 const intializeGameListeners = (socket, io) => {
   // Retrieves from socket query parameters
   const { clientId } = socket.handshake.query;
@@ -84,6 +86,12 @@ const intializeGameListeners = (socket, io) => {
   socket.on('game-player-match-submission', async (data) => {
     try {
       const { roomCode, selectedPlayerId, selectedAnswer } = data;
+      const roomTimer = roomToTimerMap[roomCode];
+      console.log('Obtained timer', roomTimer);
+
+      clearTimeout(roomTimer);
+      delete roomToTimerMap[roomCode];
+      console.log('Timer Map', roomToTimerMap);
 
       const gameState = await switchToTurnRevealPhase(
         roomCode,
@@ -113,10 +121,12 @@ const intializeGameListeners = (socket, io) => {
 
       // If gamestate is in guessing phase, start timer
       if (gameState.phase == TURN_GUESS_PHASE) {
-        setTimeout(
+        const timer = setTimeout(
           forceTurnRevealPhase(nextGuesser, roomCode, io),
           GUESS_TIMER_INTERVAL
         );
+        roomToTimerMap[roomCode] = timer;
+        console.log('Timer Map', roomToTimerMap);
       }
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
