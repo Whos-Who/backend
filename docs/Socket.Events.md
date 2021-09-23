@@ -233,6 +233,7 @@ Event listener when player answers the question. This listener require 2 attribu
 #### Required Payload
 
 - `roomCode` room code of the ongoing game
+- `answer` the answer the player submitted
 
 #### Emitted events
 
