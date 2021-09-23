@@ -70,7 +70,7 @@ async function register(req, res, next) {
     });
 
     const payload = {
-      UserId: user.id
+      userId: user.id
     };
 
     const options = {
