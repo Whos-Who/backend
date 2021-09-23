@@ -364,7 +364,10 @@ const endTurnRevealPhase = async (roomCode) => {
 
   let nextGuesser = await getNextGuesser(roomCode);
 
-  while (!isConnected(gameState, nextGuesser)) {
+  while (
+    !isConnected(gameState, nextGuesser) ||
+    getPlayerAnswer(nextGuesser, gameState) === ''
+  ) {
     nextGuesser = await getNextGuesser(roomCode);
   }
 
