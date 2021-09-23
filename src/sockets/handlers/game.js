@@ -152,7 +152,10 @@ const clearPlayersAnswersState = (players) => {
 };
 
 const checkResult = (gameState, clientId, answer) => {
-  return gameState['players'][clientId]['currAnswer']['value'] === answer;
+  return (
+    getPlayerAnswer(clientId, gameState) === answer &&
+    !playerAnswerIsGuessed(clientId, gameState)
+  );
 };
 
 const getQuestions = async (deckId) => {
