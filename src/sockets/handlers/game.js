@@ -88,7 +88,10 @@ const removeGuessingOrder = async (roomCode) => {
 
 const getRemainingAnswers = (players) => {
   const numAnswerUnguessed = Object.values(players).reduce((total, player) => {
-    return total + (player.currAnswer.isGuessed ? 0 : 1);
+    return (
+      total +
+      (player.currAnswer.isGuessed && player.currAnswer.value != '' ? 0 : 1)
+    );
   }, 0);
   return numAnswerUnguessed;
 };
