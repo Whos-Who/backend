@@ -125,7 +125,6 @@ const switchToScoreboardPhase = (gameState) => {
   return {
     ...gameState,
     phase: SCOREBOARD_PHASE,
-    currQuestion: gameState.question,
     currAnswerer: '',
     selectedPlayerId: '',
     selectedAnswer: '',
