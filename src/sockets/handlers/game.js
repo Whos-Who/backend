@@ -156,22 +156,10 @@ const checkResult = (gameState, clientId, answer) => {
 };
 
 const getQuestions = async (deckId) => {
-  //if (!deckId) throw new Error("No Deck Id")
+  if (!deckId) throw new Error('No Deck Id');
 
   // Foe FE to develop first without deckId
-  if (!deckId) {
-    const questions = [
-      'Question 1',
-      'Question 2',
-      'Question 3',
-      'Question 4',
-      'Question 5',
-      'Question 6',
-      'Question 7',
-      'Question 8'
-    ];
-    return questions;
-  }
+
   const questionsJson = await Question.findAll({
     where: {
       deckId: deckId
