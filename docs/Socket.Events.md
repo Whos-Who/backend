@@ -324,7 +324,10 @@ Emitted when a player reconnects to the server and rejoins game while previously
 
 #### Payload
 
-Payload is the updated game state with the player in connected status
+The emitted payload contains 2 attributes
+
+- `gameState` representing the updated game sate
+- `clientId` the clientId of the player who reconnected
 
 <br />
 
@@ -340,7 +343,10 @@ Emitted when a player disconnects from server while previously in middle of game
 
 #### Payload
 
-Payload is the updated game state with the player in disconnected status
+The emitted payload contains 2 attributes
+
+- `gameState` representing the updated game sate
+- `clientId` the clientId of the player who disconnected
 
 <!--
 <br />

@@ -40,7 +40,10 @@ const getLatestPlayerActivity = async (io) => {
         // console.log('ROOMS STATUS', socket.rooms);
         // console.log('SOCKET TO ROOMS MAPPING', io.sockets.adapter.sids);
 
-        socket.emit('player-reconnect', updatedGameState);
+        socket.emit('player-reconnect', {
+          gameState: updatedGameState,
+          clientId: clientId
+        });
       }
       next();
     } catch (err) {
@@ -91,7 +94,10 @@ const disconnectPlayerFromGame = async (io, clientId) => {
 
   console.log(clientId, 'disconnected from', roomCode);
 
-  io.in(roomCode).emit('player-disconnect', updatedGameState);
+  io.in(roomCode).emit('player-disconnect', {
+    gameState: updatedGameState,
+    clientId: clientId
+  });
 
   if (newHost) io.in(roomCode).emit('new-host', newHost);
 };
