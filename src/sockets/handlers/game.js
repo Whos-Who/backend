@@ -311,9 +311,10 @@ const switchToTurnRevealPhase = async (
 ) => {
   const gameState = await getAndParseGameState(roomCode);
 
-  let alreadyGuessed = false;
   const result = checkResult(gameState, selectedPlayerId, selectedAnswer);
-  alreadyGuessed = result && playerAnswerIsGuessed(selectedPlayerId, gameState);
+  const alreadyGuessed =
+    getPlayerAnswer(selectedPlayerId, gameState) === selectedAnswer &&
+    playerAnswerIsGuessed(selectedPlayerId, gameState);
 
   console.log('CHECK RESULT', result, ' ALREADY GUESSED', alreadyGuessed);
 
