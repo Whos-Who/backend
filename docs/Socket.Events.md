@@ -228,7 +228,7 @@ Event listener when player answers the question. This listener require 2 attribu
 
 **Success**
 
-- Server will emit `game-player-ready` to the client with a JSON object containing `gameState`, the updated gameState and `readyClientId`, the player who is now ready
+- Server will emit `game-player-ready` to the client with a JSON object containing `gameState`, the updated gameState and `readyClientId`, the client id of the player who is now ready
 
 **Failure**
 
@@ -256,7 +256,7 @@ Event listener when player makes a guess to match the player to answer. This lis
 
 **Success**
 
-- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState` , the updated game state in the `TURN_REVEAL_PHASE` and `alreadyGuessed`, indicating if a player's answer has already been guessed by someone.
+- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState` , the updated game state in the `TURN_REVEAL_PHASE` and `alreadyGuessed`, a boolean value indicating if a player's answer has already been guessed by someone.
 
 **Failure**
 
@@ -273,7 +273,6 @@ socket.on('game-next-turn', (data) => ....)
 #### Description
 
 - Event listener when for when the game goes to the next turn and guesser. This listener require 1 attribute `roomCode`.
-- An async timer of 30 seconds will also be fired, in which if the current game state is still in the `TURN_GUESS` phase, it will send a `game-next-phase` event to all clients to force a change to that phase.
 
 #### Required Payload
 
@@ -283,11 +282,8 @@ socket.on('game-next-turn', (data) => ....)
 
 **Success**
 
-- If there is 1 answer left and the answer belongs to the current guesser, server will emit a `game-next-phase` to the client to together with a JSON object containing `gameState`, the updated game state in the `TURN_REVEAL_PHASE` and `alreadyGuessed`, a boolean value if the player answer has already been guessed.
 
-- If there is 1 or more answer left to match, server will emit `game-next-phase` to the client together with a JSON object containing `gameState`, the updated game state, with the game state in the `TURN_GUESS_PHASE`.
-
-- If there is 0 answers left to guess, the server will emit `game-next-phase` to the client to together with a JSON object containing `gameState`, the updated game state, with the game state in the `SCOREBOARD_PHASE`.
+- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState`, the updated game state. If the updated game state is in the `TURN_REVEAL` phase, the JSON object will contain `alreadyGuessed`, a boolean value indicating if a player's answer has already been guessed by someone.
 
 **Failure**
 
