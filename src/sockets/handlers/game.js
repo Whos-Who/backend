@@ -353,7 +353,8 @@ const forceTurnRevealPhase = (nextGuesser, roomCode, io) => {
       await formatAndUpdateGameState(unansweredGameState);
       console.log('TIMES UP! Forcing a switch');
       io.to(roomCode).emit('game-next-phase', {
-        gameState: unansweredGameState
+        gameState: unansweredGameState,
+        alreadyGuessed: false
       });
     }
     console.log('Timer completed');
