@@ -261,7 +261,7 @@ Event listener when player makes a guess to match the player to answer. This lis
 
 **Success**
 
-- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState` , the updated game state in the `TURN_GUESS_REVEAL` phase and `alreadyGuessed`, indicating if a player's answer has already been guessed by someone.
+- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState` , the updated game state in the `TURN_REVEAL_PHASE` and `alreadyGuessed`, indicating if a player's answer has already been guessed by someone.
 
 **Failure**
 
@@ -288,7 +288,7 @@ socket.on('game-next-turn', (data) => ....)
 
 **Success**
 
-- If there is 1 answer left and the answer belongs to the current guesser, server will emit a `game-next-phase` to the client to together with a JSON object containing `gameState`, the updated game state, with the game state in the `TURN_REVEAL_PHASE`.
+- If there is 1 answer left and the answer belongs to the current guesser, server will emit a `game-next-phase` to the client to together with a JSON object containing `gameState`, the updated game state in the `TURN_REVEAL_PHASE` and `alreadyGuessed`, a boolean value if the player answer has already been guessed.
 
 - If there is 1 or more answer left to match, server will emit `game-next-phase` to the client together with a JSON object containing `gameState`, the updated game state, with the game state in the `TURN_GUESS_PHASE`.
 

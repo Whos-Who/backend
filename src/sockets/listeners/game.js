@@ -7,7 +7,11 @@ import {
   switchToTurnRevealPhase,
   forceTurnRevealPhase
 } from '../handlers/game';
-import { GUESS_TIMER_INTERVAL, TURN_GUESS_PHASE } from '../../const/game';
+import {
+  GUESS_TIMER_INTERVAL,
+  TURN_GUESS_PHASE,
+  TURN_REVEAL_PHASE
+} from '../../const/game';
 import { updatePlayerActivity } from '../../utils/utils';
 
 const roomToTimerMap = {};
@@ -115,12 +119,19 @@ const intializeGameListeners = (socket, io) => {
 
       const gameState = await endTurnRevealPhase(roomCode);
       const nextGuesser = gameState.currAnswerer;
-
+      let body = { gameState };
+      if (gameState.phase === TURN_REVEAL_PHASE) {
+        const newBody = {
+          ...body,
+          alreadyGuessed: false
+        };
+        body = newBody;
+      }
       console.log('NEXT TURN', 'UPDATED  GAME STATE', gameState);
-      io.to(roomCode).emit('game-next-phase', { gameState });
+      io.to(roomCode).emit('game-next-phase', body);
 
       // If gamestate is in guessing phase, start timer
-      if (gameState.phase == TURN_GUESS_PHASE) {
+      if (gameState.phase === TURN_GUESS_PHASE) {
         const timer = setTimeout(
           forceTurnRevealPhase(nextGuesser, roomCode, io),
           GUESS_TIMER_INTERVAL
