@@ -283,7 +283,7 @@ socket.on('game-next-turn', (data) => ....)
 **Success**
 
 
-- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState`, the updated game state. If the updated game state is in the `TURN_REVEAL` phase, the JSON object will contain a `alreadyGuessed`, indicating if a player's answer has already been guessed by someone.
+- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState`, the updated game state. If the updated game state is in the `TURN_REVEAL` phase, the JSON object will contain `alreadyGuessed`, a boolean value indicating if a player's answer has already been guessed by someone.
 
 **Failure**
 
