@@ -58,11 +58,11 @@ Event listener that will respond when client decides to create a room, this list
 
 **Success**
 
-- Server will emit a `room-join` to the client together with the `gameState` back to the client, indicating that the client can join the room, with the `gameState` in the `LOBBY` phase.
+- Server will emit `room-join` to the client together with the `gameState` back to the client, indicating that the client can join the room, with the `gameState` in the `LOBBY` phase.
 
 **Failure**
 
-- Server will emit a `error-room-create` to the client, together with the error message, indicating an error occured.
+- Server will emit `error-room-create` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -86,12 +86,12 @@ Event listener that will respond when client decides to join a room, this listen
 
 **Success**
 
-- Server will emit a `room-join` to the client together with the `gameState` back to the client, indicating that the client can join the room.
-- Server will emit a `user-join` to all clients in room with `roomCode` together with the updated Game State with the newly joined player `clientId`.
+- Server will emit `room-join` to the client together with the `gameState` back to the client, indicating that the client can join the room.
+- Server will emit `user-join` to all clients in the room together with a JSON object that contains with the updated game state, `gameState` and the clientId of the player joining `clientId`.
 
 **Failure**
 
-- Server will emit a `error-room-join` to the client, together with the error message, indicating an error occured.
+- Server will emit `error-room-join` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -114,15 +114,15 @@ Event listener that will respond when client decides to leave a room, this liste
 
 **Success**
 
-- Server will emit a `room-leave` back to the client, indicating that the client can leave the room.
+- Server will emit `room-leave` back to the client, indicating that the client can leave the room.
 
-- Server will also emit a `user-leave` event to announce to the all clients in the room which user had left. Response is JSON object `gameState`, representing the updated gameState and `clientId`, the clientId of the user who left the room.
+- Server will also emit a `user-leave` event to announce to all clients in the room which the user left. Attached to the emitted is a JSON object containing `gameState`, the updated gameState and `clientId`, the clientId of the user who left the room.
 
-- If the previous host left, the server will emit a `new-host` event to announce who is the new host. Response is the clientId of user who left.
+- If the previous host left, the server will emit a `new-host` event to announce who is the new host. Attached is the `clientId` of the new host.
 
 **Failure**
 
-- Server will emit a `error-room-leave` to the client, together with the error message, indicating an error occured.
+- Server will emit `error-room-leave` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -149,11 +149,11 @@ Event listener when host of game room decides to start the game. This listener r
 
 **Success**
 
-- Server will emit a `game-next-phase` to the client together with the `gameState` of the intialized game back to the client, with the gamestate in the `QUESTIONS` phase
+- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState`, the game state back to the client, with the game state in the `QUESTIONS` phase
 
 **Failure**
 
-- Server will emit a `error-game-start` to the client, together with the error message, indicating an error occured.
+- Server will emit `error-game-start` to the client, together with the error message, indicating an error occured.
   <br />
 
 ### game-next-question
@@ -180,11 +180,11 @@ Event listener when host of game room requests for next question. This listener 
 
 **Success**
 
-- Server will emit a `game-next-phase` to the client together with the `gameState` of the updated game state back to the client with the gamestate in the `QUESTIONS` phase
+- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState`, the updated game state, back to the client, with the gamestate in the `QUESTIONS` phase.
 
 **Failure**
 
-- Server will emit a `error-game-next-question` to the client, together with the error message, indicating an error occured.
+- Server will emit `error-game-next-question` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -206,11 +206,11 @@ Event listener when host of game room requests for next question. This listener 
 
 **Success**
 
-- Server will emit a `game-next-phase` to the client together with the `gameState`, back in the `LOBBY` phase.
+- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState`, the updated game state, back to the client, with the game state in the `LOBBY` phase.
 
 **Failure**
 
-- Server will emit a `error-game-end` to the client, together with the error message, indicating an error occured.
+- Server will emit `error-game-end` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -233,9 +233,7 @@ Event listener when player answers the question. This listener require 2 attribu
 
 **Success**
 
-- Server will emit a `game-player-ready` to the client a JSON object response with 2 attributes
-- `gameState` the updated gameState with the player's answer
-- `readyClientId` the player who is now ready
+- Server will emit `game-player-ready` to the client with a JSON object containing `gameState`, the updated gameState and `readyClientId`, the player who is now ready
 
 **Failure**
 
@@ -263,11 +261,11 @@ Event listener when player makes a guess to match the player to answer. This lis
 
 **Success**
 
-- Server will emit a `game-next-phase` to the client together with the `gameState` updated to the `TURN_GUESS_REVEAL` phase
+- Server will emit `game-next-phase` to the client together with a JSON object containing `gameState` , the updated game state in the `TURN_REVEAL_PHASE` and `alreadyGuessed`, indicating if a player's answer has already been guessed by someone.
 
 **Failure**
 
-- Server will emit a `error-game-player-match-submission` to the client, together with the error message, indicating an error occured.
+- Server will emit `error-game-player-match-submission` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -290,15 +288,15 @@ socket.on('game-next-turn', (data) => ....)
 
 **Success**
 
-- If there is 1 answer left and the answer belongs to the current guesser, server will emit a `game-next-phase` to the client to together with the updated `gameState` to indicate a change in phase to the `TURN_REVEAL_PHASE`.
+- If there is 1 answer left and the answer belongs to the current guesser, server will emit a `game-next-phase` to the client to together with a JSON object containing `gameState`, the updated game state in the `TURN_REVEAL_PHASE` and `alreadyGuessed`, a boolean value if the player answer has already been guessed.
 
-- If there is 1 or more answer left to match, server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `TURN_GUESS_PHASE`.
+- If there is 1 or more answer left to match, server will emit `game-next-phase` to the client together with a JSON object containing `gameState`, the updated game state, with the game state in the `TURN_GUESS_PHASE`.
 
-- If there is 0 answers left to guess, the server will emit a `game-next-phase` to the client to together with the updated gameState to indicate a change in phase to the `SCOREBOARD_PHASE`.
+- If there is 0 answers left to guess, the server will emit `game-next-phase` to the client to together with a JSON object containing `gameState`, the updated game state, with the game state in the `SCOREBOARD_PHASE`.
 
 **Failure**
 
-- Server will emit a `error-game-next-turn` to the client, together with the error message, indicating an error occured.
+- Server will emit `error-game-next-turn` to the client, together with the error message, indicating an error occured.
 
 <br />
 
@@ -314,11 +312,11 @@ socket.emit('player-reconnect', (payload) => ....)
 
 #### Description
 
-Emitted when a player reconnects to the server and rejoins game while previously in middle of game. It is emitted to all players in the room.
+Emitted when a player reconnects to the server while previously in the middle of a game. It is emitted to all players in the room.
 
 #### Payload
 
-The emitted payload contains 2 attributes
+The emitted payload is JSON object containing 2 attributes
 
 - `gameState` representing the updated game sate
 - `clientId` the clientId of the player who reconnected
@@ -333,11 +331,11 @@ socket.emit('player-disconnect', (payload) => ....)
 
 #### Description
 
-Emitted when a player disconnects from server while previously in middle of game. It is emitted to all players in the room.
+Emitted when a player disconnects from the server while in the middle of a game. It is emitted to all players in the room.
 
 #### Payload
 
-The emitted payload contains 2 attributes
+The emitted payload is JSON object containing 2 attributes
 
 - `gameState` representing the updated game sate
 - `clientId` the clientId of the player who disconnected
