@@ -311,9 +311,11 @@ const switchToTurnRevealPhase = async (
 ) => {
   const gameState = await getAndParseGameState(roomCode);
 
+  let alreadyGuessed = false;
   const result = checkResult(gameState, selectedPlayerId, selectedAnswer);
+  alreadyGuessed = result && playerAnswerIsGuessed(selectedPlayerId, gameState);
 
-  console.log('CHECK RESULT', result);
+  console.log('CHECK RESULT', result, ' ALREADY GUESSED', alreadyGuessed);
 
   const updatedGameState = result
     ? updateStateWithCorrectGuess(gameState, selectedPlayerId, selectedAnswer)
@@ -322,7 +324,7 @@ const switchToTurnRevealPhase = async (
   await formatAndUpdateGameState(updatedGameState);
 
   console.log('MATCH SUBMISSION', '- UPDATED  GAME STATE', updatedGameState);
-  return updatedGameState;
+  return [updatedGameState, alreadyGuessed];
 };
 
 const playerAnswerIsGuessed = (clientId, gameState) => {
@@ -350,7 +352,10 @@ const forceTurnRevealPhase = (nextGuesser, roomCode, io) => {
 
       await formatAndUpdateGameState(unansweredGameState);
       console.log('TIMES UP! Forcing a switch');
-      io.to(roomCode).emit('game-next-phase', unansweredGameState);
+      io.to(roomCode).emit('game-next-phase', {
+        gameState: unansweredGameState,
+        alreadyGuessed: false
+      });
     }
     console.log('Timer completed');
   };
