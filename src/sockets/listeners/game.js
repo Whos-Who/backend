@@ -25,7 +25,7 @@ const intializeGameListeners = (socket, io) => {
       const gameState = await startGame(roomCode, deckId);
 
       // Tell client game has begun and proceed to the question phase
-      io.to(roomCode).emit('game-next-phase', gameState);
+      io.to(roomCode).emit('game-next-phase', { gameState });
 
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
@@ -42,7 +42,7 @@ const intializeGameListeners = (socket, io) => {
       const gameState = await switchToQuestionsPhase(roomCode);
 
       // Tell client to proceed to open question and let user answer
-      io.to(roomCode).emit('game-next-phase', gameState);
+      io.to(roomCode).emit('game-next-phase', { gameState });
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-next-question', err.message);
@@ -56,7 +56,7 @@ const intializeGameListeners = (socket, io) => {
 
       const gameState = await endGame(roomCode);
       // Tell client game has ended and bring players back to the lobby
-      io.to(roomCode).emit('game-next-phase', gameState);
+      io.to(roomCode).emit('game-next-phase', { gameState });
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-end', err.message);
@@ -93,7 +93,7 @@ const intializeGameListeners = (socket, io) => {
       delete roomToTimerMap[roomCode];
       console.log('Timer Map', roomToTimerMap);
 
-      const gameState = await switchToTurnRevealPhase(
+      const [gameState, alreadyGuessed] = await switchToTurnRevealPhase(
         roomCode,
         selectedPlayerId,
         selectedAnswer
@@ -101,7 +101,7 @@ const intializeGameListeners = (socket, io) => {
 
       console.log('SUBMIT MATCH', '- UPDATED GAME STATE', gameState);
 
-      io.to(roomCode).emit('game-next-phase', gameState);
+      io.to(roomCode).emit('game-next-phase', { gameState, alreadyGuessed });
       await updatePlayerActivity(clientId, socketId, roomCode);
     } catch (err) {
       socket.emit('error-game-player-match-submission', err.message);
@@ -117,7 +117,7 @@ const intializeGameListeners = (socket, io) => {
       const nextGuesser = gameState.currAnswerer;
 
       console.log('NEXT TURN', 'UPDATED  GAME STATE', gameState);
-      io.to(roomCode).emit('game-next-phase', gameState);
+      io.to(roomCode).emit('game-next-phase', { gameState });
 
       // If gamestate is in guessing phase, start timer
       if (gameState.phase == TURN_GUESS_PHASE) {
