@@ -35,6 +35,6 @@ export const initializeWebSockets = (server) => {
     });
   } catch (err) {
     console.log('Error occured', err);
-    socket.emit('error', err);
+    socket.emit('socket-error', err);
   }
 };
