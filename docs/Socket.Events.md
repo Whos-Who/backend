@@ -154,7 +154,8 @@ Event listener when host of game room decides to start the game. This listener r
 **Failure**
 
 - Server will emit a `error-game-start` to the client, together with the error message, indicating an error occured.
-  <br />
+
+<br />
 
 ### game-next-question
 
@@ -162,19 +163,14 @@ Event listener when host of game room decides to start the game. This listener r
 socket.on('game-next-question', (data) => ....)
 ```
 
-<br />
-
 #### Description
 
 Event listener when host of game room requests for next question. This listener requires an attribute `roomCode`, the room code of the game requesting for the next question
-
-<br />
 
 #### Required Payload
 
 - `roomCode` room code of room player is joining
 
-<br />
 
 #### Emitted events
 
