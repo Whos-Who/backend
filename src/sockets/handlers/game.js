@@ -314,7 +314,7 @@ const switchToTurnRevealPhase = async (
   const result = checkResult(gameState, selectedPlayerId, selectedAnswer);
   const alreadyGuessed =
     getPlayerAnswer(selectedPlayerId, gameState) === selectedAnswer &&
-    playerAnswerIsGuessed(clientId, gameState);
+    playerAnswerIsGuessed(selectedPlayerId, gameState);
 
   console.log('CHECK RESULT', result, ' ALREADY GUESSED', alreadyGuessed);
 
