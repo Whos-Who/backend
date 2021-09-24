@@ -33,7 +33,10 @@ const getLatestPlayerActivity = async (io) => {
         console.log('RECONNECTING to game room', roomCode);
 
         // socket.emit('player-reconnect', gameState);
-        io.in(roomCode).emit('player-reconnect', updatedGameState);
+        io.in(roomCode).emit('player-reconnect', {
+          gameState: updatedGameState,
+          clientId: clientId
+        });
 
         socket.join(roomCode);
 
