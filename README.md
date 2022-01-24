@@ -1,10 +1,10 @@
-# CS3216 Assignment 3
+# Whos Who
 
-Backend repository for the assignment 3
+Backend repository for Whos Who, our CS3216 Assignment 3
 
 ## Table of content
 
-- [CS3216 Assignment 3](#cs3216-assignment-3)
+- [Whos-who](#whos-who)
   - [Table of content](#table-of-content)
   - [Environment Set up](#environment-set-up)
     - [Installing Dependencies](#installing-dependencies)
